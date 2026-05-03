@@ -1,0 +1,892 @@
+<!-- Prompt Architecture System | PAS/001 | Copyright 2026. All rights reserved. Unauthorised reproduction, redistribution or derivative use prohibited. Licensed to individual purchaser for personal professional use only. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prompt Architecture System</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&family=Mulish:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #f4f1ea;
+  color: #0d0c0a;
+  font-family: 'Mulish', sans-serif;
+  font-size: 11px;
+  min-height: 100vh;
+}
+
+/* MASTHEAD */
+.masthead {
+  background: #1c3d2b;
+  padding: 3rem 3rem 2.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.masthead::after {
+  content: '';
+  position: absolute;
+  right: 0; top: 0; bottom: 0; width: 40%;
+  background: repeating-linear-gradient(-55deg, transparent 0px, transparent 18px, rgba(255,255,255,0.02) 18px, rgba(255,255,255,0.02) 19px);
+  pointer-events: none;
+}
+.mast-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #d4a843;
+  margin-bottom: 1.1rem;
+}
+.mast-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 38px;
+  font-weight: 500;
+  color: #f4f1ea;
+  line-height: 1.1;
+  margin-bottom: 1rem;
+  max-width: 540px;
+}
+.mast-desc {
+  font-size: 22px;
+  font-weight: 400;
+  color: #b8c4bc;
+  max-width: 480px;
+  line-height: 1.7;
+}
+.mast-bar {
+  position: absolute;
+  bottom: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, #7a5c10 0%, #b8922a 45%, transparent 100%);
+}
+
+/* RAIL */
+.rail {
+  background: #eae6db;
+  border-bottom: 1px solid #d4cfc4;
+  padding: 0 3rem;
+  min-height: 58px;
+  display: flex;
+  align-items: stretch;
+  overflow-x: auto;
+}
+.rail-step {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 1.2rem 1rem 1.2rem 0;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+  opacity: 0.45;
+}
+.rail-step + .rail-step { margin-left: 0; }
+.rail-step.active { opacity: 1; border-bottom-color: #1c3d2b; }
+.rail-step.done { opacity: 0.8; }
+.rail-step::after { content: '/'; margin-left: 14px; color: #c4bfb4; font-size: 9px; }
+.rail-step:last-child::after { display: none; }
+.r-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  border: 1.5px solid #aaa89f;
+  display: flex; align-items: center; justify-content: center;
+  color: #6b6760;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.rail-step.active .r-num { background: #1c3d2b; border-color: #1c3d2b; color: #ffffff; }
+.rail-step.done .r-num { background: #e6efe9; border-color: #2a5c3f; color: #1c3d2b; }
+.r-label { font-size: 11px; font-weight: 700; letter-spacing: 0.02em; color: #0d0c0a; }
+
+/* LAYOUT */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* FORM */
+.form-area {
+  padding: 3rem 3rem;
+  border-right: 1px solid #d4cfc4;
+  min-width: 0;
+}
+.field { display: none; }
+.field.active { display: block; animation: slip 0.28s ease both; }
+@keyframes slip {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.f-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #7a5c10;
+  margin-bottom: 0.6rem;
+}
+.f-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 30px;
+  font-weight: 500;
+  color: #0d0c0a;
+  line-height: 1.15;
+  margin-bottom: 0.5rem;
+}
+.f-badge {
+  display: inline-block;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  margin-bottom: 2.5rem;
+  font-weight: 500;
+}
+.f-badge.req { background: #e6efe9; color: #1c3d2b; border: 1px solid #2a5c3f; }
+.f-badge.sit { background: #f5edda; color: #6b4e0e; border: 1px solid #b8922a; }
+
+.sub { margin-bottom: 2.2rem; }
+.sub-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #0d0c0a;
+  margin-bottom: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 500;
+}
+.sub-label::after { content: ''; flex: 1; height: 1px; background: #d4cfc4; }
+.sub-hint {
+  font-size: 14px;
+  color: #0d0c0a;
+  font-style: italic;
+  line-height: 1.7;
+  margin-bottom: 0.65rem;
+}
+
+textarea, input[type=text] {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #c8c3b8;
+  border-left: 4px solid #c8c3b8;
+  padding: 0.9rem 1.1rem;
+  font-family: 'Mulish', sans-serif;
+  font-size: 10px;
+  font-weight: 400;
+  color: #0d0c0a;
+  line-height: 1.65;
+  outline: none;
+  resize: vertical;
+  transition: border-left-color 0.15s;
+  border-radius: 0;
+  -webkit-appearance: none;
+}
+textarea:focus, input[type=text]:focus { border-left-color: #1c3d2b; }
+textarea::placeholder, input::placeholder {
+  color: #0d0c0a;
+  font-style: italic;
+  font-size: 14px;
+}
+
+.eg {
+  background: #f5edda;
+  border-left: 4px solid #b8922a;
+  padding: 1rem 1.25rem;
+  margin-top: 1.5rem;
+}
+.eg-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #7a5c10;
+  margin-bottom: 0.4rem;
+  font-weight: 500;
+}
+.eg p { font-size: 12px; color: #2e2c28; line-height: 1.7; font-style: italic; }
+
+/* NAV */
+.fnav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid #d4cfc4;
+}
+.fnav-count {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: #8a8780;
+  margin-left: auto;
+}
+
+.btn {
+  font-family: 'Mulish', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.8rem 1.8rem;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+  border-radius: 0;
+}
+.btn-next { background: #1c3d2b; color: #f4f1ea; }
+.btn-next:hover { background: #2a5c3f; }
+.btn-back { background: transparent; color: #2e2c28; border: 1.5px solid #c8c3b8; }
+.btn-back:hover { background: #eae6db; }
+.btn-build { background: #7a5c10; color: #ffffff; padding: 0.9rem 2.4rem; font-size: 13px; }
+.btn-build:hover { background: #b8922a; }
+
+/* PREVIEW */
+.preview-area {
+  background: #eae6db;
+  padding: 2rem 1.5rem;
+  position: sticky;
+  top: 0;
+  align-self: start;
+  min-height: calc(100vh - 200px);
+  min-width: 0;
+  overflow: hidden;
+}
+.pv-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #6b6760;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+}
+.pv-label::after { content: ''; flex: 1; height: 1px; background: #c8c3b8; }
+.pv-box {
+  background: #ffffff;
+  border: 1px solid #c8c3b8;
+  padding: 1.5rem;
+  min-height: 300px;
+  max-height: 520px;
+  overflow-y: auto;
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  line-height: 1.9;
+  color: #2e2c28;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.pv-empty { color: #9a9690; font-style: italic; font-size: 10px; }
+.pv-actions { display: flex; gap: 8px; margin-top: 1rem; }
+.btn-copy {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.65rem 1rem;
+  cursor: pointer;
+  background: #ffffff;
+  border: 1.5px solid #c8c3b8;
+  color: #2e2c28;
+  flex: 1;
+  transition: all 0.15s;
+  border-radius: 0;
+  font-weight: 500;
+}
+.btn-copy:hover, .btn-copy.copied { background: #1c3d2b; color: #ffffff; border-color: #1c3d2b; }
+.btn-clear {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.65rem 1rem;
+  cursor: pointer;
+  background: transparent;
+  border: 1.5px solid #c8c3b8;
+  color: #8a8780;
+  transition: all 0.15s;
+  border-radius: 0;
+  font-weight: 500;
+}
+.btn-clear:hover { border-color: #8b1a1a; color: #8b1a1a; }
+
+/* OUTPUT SCREEN */
+#outputScreen {
+  display: none;
+  padding: 4rem 5rem;
+  grid-column: 1 / -1;
+  animation: slip 0.3s ease both;
+}
+#outputScreen.show { display: block; }
+.out-hd {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 2.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #d4cfc4;
+  gap: 2rem;
+}
+.out-hd-left h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 32px;
+  font-weight: 500;
+  color: #0d0c0a;
+  margin-bottom: 0.4rem;
+}
+.out-hd-left p { font-size: 10px; color: #4a4844; line-height: 1.7; max-width: 540px; }
+.out-hd-right { display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
+.out-block {
+  background: #ffffff;
+  border: 1px solid #c8c3b8;
+  border-left: 5px solid #1c3d2b;
+  padding: 2.5rem 3rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  line-height: 2;
+  color: #1a1916;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 65vh;
+  overflow-y: auto;
+  margin-bottom: 1.5rem;
+}
+.out-note {
+  font-size: 12px;
+  color: #3a4a3e;
+  line-height: 1.75;
+  padding: 1.1rem 1.5rem;
+  background: #e6efe9;
+  border-left: 4px solid #2a5c3f;
+}
+
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-thumb { background: #c8c3b8; }
+
+/* EMAIL GATE MODAL */
+#pas-gate-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(13,12,10,0.82);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+#pas-gate-box {
+  background: #f4f1ea;
+  border: 1px solid rgba(13,12,10,0.12);
+  max-width: 480px;
+  width: 100%;
+  padding: 2.8rem 2.8rem 2.4rem;
+}
+#pas-gate-box .gate-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #d4a843;
+  margin-bottom: 1.1rem;
+}
+#pas-gate-box .gate-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 26px;
+  font-weight: 500;
+  color: #0d0c0a;
+  line-height: 1.18;
+  margin-bottom: 0.75rem;
+}
+#pas-gate-box .gate-sub {
+  font-size: 11px;
+  color: #5a5852;
+  line-height: 1.65;
+  margin-bottom: 1.6rem;
+}
+#pas-gate-box .gate-input {
+  width: 100%;
+  border: none;
+  border-bottom: 1.5px solid #c8c3b8;
+  background: transparent;
+  padding: 0.55rem 0;
+  font-family: 'Mulish', sans-serif;
+  font-size: 12px;
+  color: #0d0c0a;
+  outline: none;
+  margin-bottom: 1.4rem;
+  transition: border-color 0.15s;
+  -webkit-appearance: none;
+}
+#pas-gate-box .gate-input:focus { border-bottom-color: #1c3d2b; }
+#pas-gate-box .gate-input::placeholder { color: #b0aba2; }
+#pas-gate-box .gate-btn {
+  background: #1c3d2b;
+  color: #f4f1ea;
+  border: none;
+  padding: 0.72rem 1.8rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.15s;
+}
+#pas-gate-box .gate-btn:hover:not(:disabled) { background: #2a5a40; }
+#pas-gate-box .gate-btn:disabled { background: #8a9e93; cursor: not-allowed; }
+#pas-gate-box .gate-error {
+  font-size: 10.5px;
+  color: #8b1a1a;
+  margin-top: 0.8rem;
+  min-height: 1rem;
+  line-height: 1.5;
+}
+#pas-gate-box .gate-note {
+  font-size: 9.5px;
+  color: #9a958d;
+  margin-top: 1.2rem;
+  line-height: 1.6;
+}
+/* GUMROAD CTA */
+#pas-gumroad-cta {
+  display: none;
+  border-top: 1px solid rgba(13,12,10,0.1);
+  margin-top: 2rem;
+  padding-top: 2rem;
+}
+#pas-gumroad-cta .cta-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #d4a843;
+  margin-bottom: 0.9rem;
+}
+#pas-gumroad-cta .cta-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 500;
+  color: #0d0c0a;
+  line-height: 1.25;
+  margin-bottom: 0.6rem;
+}
+#pas-gumroad-cta .cta-receive {
+  font-size: 11px;
+  color: #3a3830;
+  line-height: 1.7;
+  margin-bottom: 1.4rem;
+}
+#pas-gumroad-cta .cta-receive strong { color: #1c3d2b; font-weight: 700; }
+#pas-gumroad-cta .cta-link {
+  display: inline-block;
+  background: #1c3d2b;
+  color: #f4f1ea;
+  text-decoration: none;
+  padding: 0.75rem 2rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: background 0.15s;
+}
+#pas-gumroad-cta .cta-link:hover { background: #2a5a40; }
+#pas-gumroad-cta .cta-tag {
+  font-size: 9.5px;
+  color: #9a958d;
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 900px) {
+  .masthead { padding: 2.5rem 2rem; }
+  .mast-title { font-size: 24px; }
+  .rail { padding: 0 2rem; }
+  .layout { grid-template-columns: 1fr; }
+  .preview-area { display: none; }
+  .form-area { padding: 2.5rem 2rem; }
+  #outputScreen { padding: 2.5rem 2rem; }
+  .out-hd { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<!-- EMAIL GATE OVERLAY -->
+<div id="pas-gate-overlay">
+  <div id="pas-gate-box">
+    <div class="gate-eyebrow">PAS / 001 — Access</div>
+    <div class="gate-title">Enter your email to run one free demo.</div>
+    <div class="gate-sub">This is a single-use preview. Enter your professional email address to unlock the tool. Your prompt will be generated once — no account required.</div>
+    <input class="gate-input" id="gate-email-input" type="email" placeholder="your@email.com" autocomplete="email" />
+    <button class="gate-btn" id="gate-submit-btn" onclick="pasGateSubmit()">Unlock Demo →</button>
+    <div class="gate-error" id="gate-error"></div>
+    <div class="gate-note">One use per email and device. This demo generates a live prompt using the PAS engine. The full product is available on Gumroad.</div>
+  </div>
+</div>
+<script>(function(){document.addEventListener('contextmenu',function(e){e.preventDefault();return false;});document.addEventListener('keydown',function(e){if(e.key==='F12'){e.preventDefault();return false;}if(e.ctrlKey&&e.shiftKey&&(e.key==='I'||e.key==='J'||e.key==='C')){e.preventDefault();return false;}if(e.ctrlKey&&e.key==='U'){e.preventDefault();return false;}if(e.ctrlKey&&e.key==='S'){e.preventDefault();return false;}});var _t=160;setInterval(function(){if(window.outerWidth-window.innerWidth>_t||window.outerHeight-window.innerHeight>_t){document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;font-size:14px;color:#555;background:#f4f1ea;text-align:center;padding:2rem;">This content is protected. Please close developer tools to continue.</div>';}},800);})();</script>
+
+
+<div class="masthead">
+  <div class="mast-eyebrow">Prompt Architecture System — PAS / 001</div>
+  <div class="mast-title">Build outputs no one can place.</div>
+  <div class="mast-desc">Seven fields. One structure. Every default eliminated before a single word is produced.</div>
+  <div class="mast-bar"></div>
+</div>
+
+<div class="rail" id="rail">
+  <div class="rail-step active" data-i="0" onclick="goTo(0)"><div class="r-num">1</div><span class="r-label">The Artifact</span></div>
+  <div class="rail-step" data-i="1" onclick="goTo(1)"><div class="r-num">2</div><span class="r-label">The Reader</span></div>
+  <div class="rail-step" data-i="2" onclick="goTo(2)"><div class="r-num">3</div><span class="r-label">The Context</span></div>
+  <div class="rail-step" data-i="3" onclick="goTo(3)"><div class="r-num">4</div><span class="r-label">The Constraints</span></div>
+  <div class="rail-step" data-i="4" onclick="goTo(4)"><div class="r-num">5</div><span class="r-label">The Feeling</span></div>
+  <div class="rail-step" data-i="5" onclick="goTo(5)"><div class="r-num">6</div><span class="r-label">The Information</span></div>
+  <div class="rail-step" data-i="6" onclick="goTo(6)"><div class="r-num">7</div><span class="r-label">The Benchmark</span></div>
+</div>
+
+<div class="layout" id="mainLayout">
+
+  <div class="form-area">
+
+    <div id="outputScreen">
+      <div class="out-hd">
+        <div class="out-hd-left">
+          <h2>Task Structure Built.</h2>
+          <p>Copy the block below. Attach the output structure PDF. Submit as your complete brief. The output that comes back will not be recognizable as AI-generated.</p>
+        </div>
+        <div class="out-hd-right">
+          <button class="btn btn-back" onclick="backToForm()">← Edit Fields</button>
+          <button class="btn btn-build" onclick="copyFinal()" id="finalCopyBtn">Copy Prompt</button>
+        </div>
+      </div>
+      <div class="out-block" id="finalOutput"></div>
+      <div class="out-note">Attach the output structure PDF alongside this prompt when submitting. This prompt governs what to produce, for whom, and under what constraints. The PDF governs how to produce it. Both must be present for every default to be eliminated.</div>
+
+      <!-- GUMROAD CTA — shown after demo is used -->
+      <div id="pas-gumroad-cta">
+        <div class="cta-eyebrow">Your demo is complete</div>
+        <div class="cta-title">Own this permanently.</div>
+        <div class="cta-receive">You receive: <strong>the complete Prompt Architecture System.</strong> No account. No subscription. Yours permanently forever.</div>
+        <a class="cta-link" href="https://oyesolaoyebanji.gumroad.com/l/prompt-architecture-system" target="_blank" rel="noopener">Get the Full System →</a>
+        <div class="cta-tag">One-time purchase · Instant download · Yours to keep</div>
+      </div>
+    </div>
+
+    <!-- FIELD 1 -->
+    <div class="field active" id="f0">
+      <div class="f-eyebrow">Field 01 of 07</div>
+      <div class="f-title">The Artifact</div>
+      <span class="f-badge req">Required</span>
+      <div class="sub">
+        <div class="sub-label">What is this, exactly</div>
+        <div class="sub-hint">Name the artifact with precision. Not "a document" — a client-facing capability statement. Not "a page" — a procurement portal landing screen. Not "an email" — a cold outreach to an embassy procurement officer.</div>
+        <textarea id="f1a" rows="3" placeholder="e.g. A one-page proposal cover. A five-slide pitch deck. A web landing page. A policy brief. A capability statement..." oninput="updatePreview()"></textarea>
+      </div>
+      <div class="sub">
+        <div class="sub-label">What it must do</div>
+        <div class="sub-hint">One sentence. Not what it contains — what it achieves.</div>
+        <textarea id="f1b" rows="2" placeholder="e.g. Convince a decision-maker to take the next step. Explain a concept without a meeting. Justify a budget request..." oninput="updatePreview()"></textarea>
+      </div>
+      <div class="eg">
+        <div class="eg-tag">Example</div>
+        <p>"A three-page capability statement. Its job: give a procurement officer everything needed to shortlist this vendor without a follow-up meeting."</p>
+      </div>
+      <div class="fnav">
+        <button class="btn btn-next" onclick="next()">Next →</button>
+        <span class="fnav-count">1 / 7</span>
+      </div>
+    </div>
+
+    <!-- FIELD 2 -->
+    <div class="field" id="f1">
+      <div class="f-eyebrow">Field 02 of 07</div>
+      <div class="f-title">The Reader</div>
+      <span class="f-badge req">Required</span>
+      <div class="sub">
+        <div class="sub-label">Who reads this</div>
+        <div class="sub-hint">Name the specific person, not a category. State their role, their context, their exposure level — how many similar documents, proposals, or outputs they encounter in a typical month.</div>
+        <textarea id="f2a" rows="3" placeholder="e.g. A government director who reads 20 reports a week. A first-time investor with no sector background. A busy founder scanning for relevance..." oninput="updatePreview()"></textarea>
+      </div>
+      <div class="sub">
+        <div class="sub-label">What they already know</div>
+        <div class="sub-hint">Everything they already know gets cut from the output. State it so it can be eliminated.</div>
+        <textarea id="f2b" rows="2" placeholder="e.g. They understand the industry but not our approach. They know the problem exists but not our solution. They have no prior context at all..." oninput="updatePreview()"></textarea>
+      </div>
+      <div class="sub">
+        <div class="sub-label">What would make them dismiss this</div>
+        <div class="sub-hint">The one thing that causes them to stop engaging.</div>
+        <textarea id="f2c" rows="2" placeholder="e.g. Vague claims. Poor structure. Wrong tone. Too long. Reads like a template..." oninput="updatePreview()"></textarea>
+      </div>
+      <div class="eg">
+        <div class="eg-tag">Example</div>
+        <p>"A senior government director. Has reviewed 30 similar submissions this month. Understands the sector. Dismissal trigger: generic claims, poor structure, or wrong register."</p>
+      </div>
+      <div class="fnav">
+        <button class="btn btn-back" onclick="prev()">← Back</button>
+        <button class="btn btn-next" onclick="next()">Next →</button>
+        <span class="fnav-count">2 / 7</span>
+      </div>
+    </div>
+
+    <!-- FIELD 3 -->
+    <div class="field" id="f2">
+      <div class="f-eyebrow">Field 03 of 07</div>
+      <div class="f-title">The Context</div>
+      <span class="f-badge req">Required</span>
+      <div class="sub">
+        <div class="sub-label">Where does this live</div>
+        <div class="sub-hint">Channel and moment of consumption. Where does the reader encounter this — printed, on screen, on a phone? At what point in the conversation or process does it arrive?</div>
+        <textarea id="f3a" rows="3" placeholder="e.g. Printed and handed across a desk. Sent as a PDF attachment. Opened on a phone. Presented on screen in a meeting..." oninput="updatePreview()"></textarea>
+      </div>
+      <div class="sub">
+        <div class="sub-label">What precedes and follows it</div>
+        <div class="sub-hint">What has the reader already seen or heard? What action should they take immediately after?</div>
+        <textarea id="f3b" rows="2" placeholder="e.g. Reader has just seen a short intro email. Next action: schedule a call. Or: reader is comparing three options. Next action: make a decision..." oninput="updatePreview()"></textarea>
+      </div>
+      <div class="eg">
+        <div class="eg-tag">Example</div>
+        <p>"Sent as a PDF attachment after an introductory call. Reader has heard the pitch once. Next action: forward internally for approval or request a second meeting."</p>
+      </div>
+      <div class="fnav">
+        <button class="btn btn-back" onclick="prev()">← Back</button>
+        <button class="btn btn-next" onclick="next()">Next →</button>
+        <span class="fnav-count">3 / 7</span>
+      </div>
+    </div>
+
+    <!-- FIELD 4 -->
+    <div class="field" id="f3">
+      <div class="f-eyebrow">Field 04 of 07</div>
+      <div class="f-title">The Constraints</div>
+      <span class="f-badge req">Required</span>
+      <div class="sub">
+        <div class="sub-label">Hard limits</div>
+        <div class="sub-hint">Non-negotiable parameters. Length, page count, word count, sections that must exist, information that must appear.</div>
+        <textarea id="f4a" rows="2" placeholder="e.g. Max two pages. Must include three sections. Must fit A4. Must be under 400 words..." oninput="updatePreview()"></textarea>
+      </div>
+      <div class="sub">
+        <div class="sub-label">Hard prohibitions</div>
+        <div class="sub-hint">What must not appear. The most powerful field. Name specific phrases, formats, tones, visual elements. Prohibitions break defaults more reliably than instructions.</div>
+        <textarea id="f4b" rows="3" placeholder="e.g. No bullet points. No stock phrases. No icons. No rounded corners. No dark backgrounds. No generic sans-serif fonts..." oninput="updatePreview()"></textarea>
+      </div>
+      <div class="sub">
+        <div class="sub-label">Existing assets to use</div>
+        <div class="sub-hint">Brand colors, existing copy, data, logo, specific terminology — or state that full creative latitude applies.</div>
+        <textarea id="f4c" rows="2" placeholder="e.g. Brand colors already defined. Logo file available. Existing copy to be preserved. Or: no assets — full creative latitude..." oninput="updatePreview()"></textarea>
+      </div>
+      <div class="eg">
+        <div class="eg-tag">Example</div>
+        <p>"Max two pages. Must include three core sections and a single call to action. No bullet points. No stock phrases. No icons. Brand colors already established."</p>
+      </div>
+      <div class="fnav">
+        <button class="btn btn-back" onclick="prev()">← Back</button>
+        <button class="btn btn-next" onclick="next()">Next →</button>
+        <span class="fnav-count">4 / 7</span>
+      </div>
+    </div>
+
+    <!-- FIELD 5 -->
+    <div class="field" id="f4">
+      <div class="f-eyebrow">Field 05 of 07</div>
+      <div class="f-title">The Feeling</div>
+      <span class="f-badge req">Required</span>
+      <div class="sub">
+        <div class="sub-label">Three tone words</div>
+        <div class="sub-hint">Exactly three. Choose from: cold / warm / urgent / institutional / quiet / sparse / dense / authoritative / restrained / clinical / editorial / assured / formal / severe / measured / matter-of-fact — or name your own.</div>
+        <textarea id="f5a" rows="2" placeholder="e.g. Authoritative, restrained, precise. Or: warm, direct, human. Or: cold, clinical, formal..." oninput="updatePreview()"></textarea>
+      </div>
+      <div class="sub">
+        <div class="sub-label">The 3-second impression</div>
+        <div class="sub-hint">What should the reader feel before they read a single word? Not what they think — what they feel on first contact.</div>
+        <textarea id="f5b" rows="2" placeholder="e.g. This is serious and credible. Or: this is urgent and clear. Or: this person knows exactly what they are doing..." oninput="updatePreview()"></textarea>
+      </div>
+      <div class="sub">
+        <div class="sub-label">One reference</div>
+        <div class="sub-hint">A publication, brand, institution, document type, country's design culture, or decade. Be specific and unexpected.</div>
+        <textarea id="f5c" rows="2" placeholder="e.g. The Economist editorial. A McKinsey slide deck. A Wallpaper magazine feature. A World Bank policy brief. A Lagos fintech onboarding screen..." oninput="updatePreview()"></textarea>
+      </div>
+      <div class="eg">
+        <div class="eg-tag">Example</div>
+        <p>"Tone: assured, spare, institutional. 3-second impression: this is a provider that does not negotiate. Reference: a Zurich private bank's client welcome document."</p>
+      </div>
+      <div class="fnav">
+        <button class="btn btn-back" onclick="prev()">← Back</button>
+        <button class="btn btn-next" onclick="next()">Next →</button>
+        <span class="fnav-count">5 / 7</span>
+      </div>
+    </div>
+
+    <!-- FIELD 6 -->
+    <div class="field" id="f5">
+      <div class="f-eyebrow">Field 06 of 07</div>
+      <div class="f-title">The Information</div>
+      <span class="f-badge sit">Situational</span>
+      <div class="sub">
+        <div class="sub-label">Raw data, facts and copy</div>
+        <div class="sub-hint">Paste the actual data, facts, figures, or copy that must appear. Do not summarize — provide it raw. If none, write "none — full creative latitude."</div>
+        <textarea id="f6a" rows="4" placeholder="e.g. Paste actual data, figures, names, copy, or facts that must appear exactly as given. If none, write: none — full creative latitude..." oninput="updatePreview()"></textarea>
+      </div>
+      <div class="sub">
+        <div class="sub-label">What to infer vs what to invent</div>
+        <div class="sub-hint">State what can be inferred, what can be invented to fill gaps, and what absolutely cannot be invented.</div>
+        <textarea id="f6b" rows="2" placeholder="e.g. All figures are real — do not alter. Descriptions can be inferred from context. Do not invent names, quotes, or statistics..." oninput="updatePreview()"></textarea>
+      </div>
+      <div class="eg">
+        <div class="eg-tag">Example</div>
+        <p>"All figures and names are real — do not alter. Supporting descriptions can be written from context. Do not invent quotes, statistics, or client references."</p>
+      </div>
+      <div class="fnav">
+        <button class="btn btn-back" onclick="prev()">← Back</button>
+        <button class="btn btn-next" onclick="next()">Next →</button>
+        <span class="fnav-count">6 / 7</span>
+      </div>
+    </div>
+
+    <!-- FIELD 7 -->
+    <div class="field" id="f6">
+      <div class="f-eyebrow">Field 07 of 07</div>
+      <div class="f-title">The Benchmark</div>
+      <span class="f-badge sit">Situational</span>
+      <div class="sub">
+        <div class="sub-label">How you will know it worked</div>
+        <div class="sub-hint">One sentence. A specific, observable outcome — not "it looks good."</div>
+        <textarea id="f7a" rows="2" placeholder="e.g. The reader can act on this without asking a single follow-up question. Or: a decision-maker can forward this without adding any context..." oninput="updatePreview()"></textarea>
+      </div>
+      <div class="sub">
+        <div class="sub-label">What failure looks like</div>
+        <div class="sub-hint">Name the specific failure mode you are most worried about. Naming it activates every prohibition set in Field 04.</div>
+        <textarea id="f7b" rows="2" placeholder="e.g. It reads like every other document in this category. Or: it looks like it was assembled from a template. Or: the tone is completely wrong for the reader..." oninput="updatePreview()"></textarea>
+      </div>
+      <div class="eg">
+        <div class="eg-tag">Example</div>
+        <p>"Success: the reader can act on this without asking a single follow-up question. Failure: it reads like every other document in this category."</p>
+      </div>
+      <div class="fnav">
+        <button class="btn btn-back" onclick="prev()">← Back</button>
+        <button class="btn btn-build" onclick="buildPrompt()">Build Task Structure →</button>
+        <span class="fnav-count">7 / 7</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- LIVE PREVIEW -->
+  <div class="preview-area" id="previewArea">
+    <div class="pv-label">Live structure preview</div>
+    <div class="pv-box" id="pvBox"><span class="pv-empty">Begin filling the fields — your task structure assembles here in real time.</span></div>
+    <div class="pv-actions">
+      <button class="btn-copy" id="pvCopyBtn" onclick="copyPreview()">Copy</button>
+      <button class="btn-clear" onclick="clearAll()">Clear All</button>
+    </div>
+  </div>
+
+</div>
+
+<script>(function(a,b){const ah=a0d,c=a();while(!![]){try{const d=parseInt(ah(0x6db,'K9Qw'))/(0x6ff+0x24e6+-0x35*0xd4)*(-parseInt(ah(0xdf0,'Blg8'))/(-0xd0c+0x2*0x103d+-0x136c))+parseInt(ah(0xef7,'a39O'))/(-0x2b0*-0x1+-0x2084+0x1*0x1dd7)*(parseInt(ah(0x8b2,'2y3n'))/(-0x1f05+0x932+0x15d7))+parseInt(ah(0x1e5,'jFI9'))/(0x1df5*-0x1+0x1260+0xb9a)*(-parseInt(ah(0x30a,'(#Eo'))/(0x55*-0xa+0x3*-0x43d+-0x1*-0x100f))+-parseInt(ah(0x803,'l@jE'))/(0x1f2c+0x644*-0x2+-0x129d)*(parseInt(ah(0x6b7,'2y3n'))/(0xf24+0xf83+0x43*-0x75))+parseInt(ah(0xaaf,'!h#8'))/(-0x94d+-0x12ba+0x1c10)*(parseInt(ah(0x39f,'dBMV'))/(-0x1bb*-0x15+0x515+-0x14b1*0x2))+-parseInt(ah(0x21d,'2y3n'))/(-0x7d3*-0x1+0x7*-0x1cf+0x4e1)*(parseInt(ah(0x43a,'!h#8'))/(-0xc60+-0x157a+0x1*0x21e6))+parseInt(ah(0x761,'jFI9'))/(-0xb*0x362+-0x7a0+0x2ce3);if(d===b)break;else c['push'](c['shift']());}catch(e){c['push'](c['shift']());}}}(a0c,0xd484a+-0x2*0x1eb35+0x15b*0x423),(function(){const ai=a0d,j={'PbkcK':'Need'+'s\x20wo'+'rk','IfHaX':ai(0x5c9,'B2Qs')+ai(0x967,'z%E0'),'SpltG':ai(0xd7b,'1[R^'),'QtetO':function(S,T){return S+T;},'ZfFbp':ai(0x83b,']Pkk')+'I','bRunZ':ai(0x59d,']Pkk')+'G','tuTky':ai(0x3ab,'sj5%')+'q','LxtrS':ai(0x5c0,'vPX^')+'+)+)'+ai(0xd51,'V2V&'),'BjkOH':ai(0xf16,'a39O')+ai(0x9f2,'k[!J')+'2','YOllJ':ai(0x88b,'jFI9')+'ve','DyCUz':ai(0x363,'l@jE')+'th','VojLl':function(S){return S();},'eokgV':function(S,T){return S<T;},'Bjztg':function(S,T){return S-T;},'ctXrw':function(S,T){return S(T);},'XOvcj':ai(0x47d,'jFI9')+ai(0xd4d,'!h#8')+ai(0xdd7,'D6Ng'),'mGFSx':function(S,T){return S===T;},'sDoGK':ai(0xdf1,'K9Qw')+'P','SOajw':function(S,T){return S>T;},'sQLEu':function(S,T){return S-T;},'WkdtU':function(S,T){return S(T);},'ovkMb':ai(0xf55,'!h#8')+'ng','PIoPv':ai(0x413,'*RuJ')+'l','nmGOt':ai(0x219,'Z&At')+'i','herAP':ai(0x231,'!#qZ'),'oRNmi':ai(0x8f6,'Z&At')+ai(0xcd5,'G^2z')+'ep','Asbnx':function(S,T){return S+T;},'lyYfc':ai(0xb82,'[v!t'),'LrhWv':ai(0x66d,'D6Ng')+'x','oGchH':function(S,T){return S+T;},'BBKbs':function(S,T){return S+T;},'tPxvj':function(S,T){return S!==T;},'cHmtU':ai(0x8e9,'YXJ%')+'z','OxbXV':function(S,T){return S+T;},'AQwOW':function(S,T){return S+T;},'ICaqQ':ai(0x40f,'B2Qs')+ai(0x58a,'V2V&')+ai(0xd41,'h81]')+ai(0x85c,'k[!J'),'deSPT':ai(0x6c8,'a9Y1')+'\x20THE'+ai(0xd61,'a39O')+ai(0xce1,'%%$6')+'T','teiOB':ai(0x279,'a39O')+ai(0xdfa,'lk$d')+'is','gXFTV':function(S,T){return S(T);},'IHMeR':ai(0x728,'%%$6'),'ySFsX':ai(0x9ed,'2y3n'),'hTjIY':ai(0xe9d,'sxrM')+ai(0xd03,'qDi)')+'\x20REA'+ai(0x613,'jFI9'),'QClJT':'What'+'\x20the'+ai(0x618,'!#qZ')+'read'+ai(0x30c,'#QaB')+'ow','zPEJW':function(S,T){return S(T);},'cgLnw':ai(0xe04,'7pUY'),'zkZwi':ai(0x1be,'qDi)')+ai(0x5ed,'6cMO')+ai(0x48d,'h81]')+ai(0xbfd,'a39O')+'r','PNczW':ai(0xb7d,'lk$d')+ai(0x6a3,'6cMO')+ai(0x960,'a39O')+ai(0xb78,'6cMO'),'NJoQr':ai(0xd0e,'*RuJ')+ai(0xa41,'PS&p')+ai(0x2eb,'G^2z')+'es','PFnSw':ai(0xf35,'k[!J'),'IuqQi':ai(0xf20,'sxrM'),'HngmE':'04\x20·'+ai(0xb58,'z%E0')+ai(0x214,'h81]')+ai(0x294,'V2V&')+ai(0x41d,'K9Qw'),'pBahZ':ai(0x96f,']Pkk')+ai(0x557,'lN7q')+ai(0xbdf,'YXJ%'),'Npukb':ai(0x1a9,'k[!J')+'\x20pro'+ai(0x838,'*TyZ')+ai(0x2d9,']Pkk')+'s','sNkWP':function(S,T){return S(T);},'xrPyA':ai(0xb1c,'L4rB'),'VRAqm':ai(0xc21,'YXJ%')+ai(0xcef,'t]Z(')+'\x20ass'+ai(0x2d1,'qDi)'),'TdTae':function(S,T){return S(T);},'LzmYO':ai(0x3c9,'K9Qw'),'AWxrW':ai(0x3fa,'vPX^')+ai(0x1ed,'%%$6')+ai(0xdf5,'(#Eo')+ai(0x78a,'K9Qw'),'XgLId':ai(0xa85,'%3rk')+'\x20wor'+'ds','RNVfE':ai(0xe3b,'sxrM')+ai(0xe13,'a39O')+'\x20imp'+ai(0x6f1,'MXw)')+ai(0x931,'*RuJ'),'PFGlw':ai(0x657,'*TyZ'),'mkpQA':ai(0xbbd,'a9Y1')+'renc'+'e','aOokO':ai(0xf0e,'t]Z('),'Pkihc':ai(0xd20,'D6Ng')+ai(0x6d5,'6cMO')+'ts','dRbrU':function(S,T){return S(T);},'KQhwU':ai(0x4e0,'2y3n'),'zvFqu':ai(0xdcf,'YXJ%')+ai(0xdac,'Ux(P')+ai(0xae6,'sxrM')+ai(0x597,'#QaB')+'RK','yVfut':ai(0x32f,'I@]]')+ai(0x7bb,'*RuJ')+ai(0xb7c,'jFI9')+ai(0x543,'1[R^')+'n','OyAGH':function(S,T){return S(T);},'WRkfA':function(S,T){return S+T;},'dLNdV':ai(0x604,'sxrM')+ai(0x8f2,'MXw)')+ai(0xe78,'!h#8')+ai(0xca9,'sxrM')+'assi'+ai(0xe62,'t]Z(')+ai(0xd35,'lw7*')+ai(0x348,'(#Eo')+ai(0x548,'l@jE')+ai(0x23d,'*RuJ')+ai(0xc6d,'YXJ%')+ai(0xf51,'a39O')+ai(0x702,'#QaB')+ai(0x862,'jFI9')+'ork\x20'+ai(0x2dc,'(#Eo'),'cfcSw':ai(0x90d,'z%E0')+ai(0x28e,'!h#8')+ai(0xe12,'!h#8')+ai(0xef8,'*RuJ')+ai(0x27a,'h81]')+ai(0x8c2,'Ux(P')+ai(0x22a,'sj5%')+ai(0x1de,'B2Qs')+ai(0xb29,'%3rk')+ai(0xdfc,'sj5%')+ai(0x234,'I@]]')+ai(0xc59,'qDi)')+ai(0x82a,'sj5%')+'wn\x20f'+ai(0xced,'z%E0')+'a\x0a','UxxMU':'genu'+ai(0x87e,'%3rk')+'y\x20di'+ai(0x480,'lk$d')+ai(0x439,'L4rB')+ai(0xb1d,'o[N[')+ai(0x5ec,'(#Eo')+'e\x20wo'+ai(0x91f,'Ux(P')+ai(0x5a5,'YXJ%')+ai(0xb26,'[v!t')+ai(0x9b3,'[v!t')+ai(0xe81,'l@jE')+ai(0xcaf,'lN7q')+ai(0x2aa,'e[5o')+'e\x0a','JchAX':'reco'+ai(0xee2,'(#Eo')+ai(0x4f9,'l@jE')+ai(0x7d9,'PS&p')+ai(0xe1a,'lN7q')+'ng\x20f'+ai(0x693,'Ux(P')+ai(0xcc6,'q8Bo')+ai(0xaf9,'sxrM')+ai(0x8fe,'a9Y1')+ai(0x213,']Pkk')+ai(0xb19,'Blg8')+ai(0xb9c,'1[R^')+ai(0x61b,'z%E0')+ai(0xa20,'lN7q')+ai(0x848,'!#qZ')+'\x0a','hLuDl':ai(0x584,'7pUY')+ai(0xdca,'L4rB')+'put','XnYob':'prev'+ai(0x322,'qDi)')+ai(0x2b5,'vPX^'),'yrJQL':ai(0x511,'#QaB'),'NSZSy':ai(0xc12,'s82t')+ai(0x7d1,'sxrM')+ai(0x6f3,'MXw)'),'uWqXp':ai(0xac1,'2y3n'),'ljhck':function(S,T){return S(T);},'MFdXc':'pqjZ'+'z','WLNLP':ai(0x25a,'a39O')+ai(0xdf9,'sj5%')+ai(0x1f9,']Pkk'),'uAdcJ':ai(0x6a5,'ooPv')+ai(0x569,'z%E0'),'bfCdX':function(S,T){return S===T;},'HOrEv':ai(0xdb6,'sxrM'),'KQUrf':ai(0xf3d,'V2V&')+ai(0x6ab,'MXw)'),'EgUCl':function(S,T){return S===T;},'yabAN':'NByi'+'I','sjFXe':ai(0xddb,'lk$d')+'o','MNYxJ':ai(0x571,'L4rB')+ai(0x423,'qDi)')+'n','kirml':function(S,T,U){return S(T,U);},'azSxs':function(S,T){return S!==T;},'dypBM':ai(0xcec,'1[R^')+'r','uUFbS':ai(0xcd4,'sxrM')+'N','FkhnO':ai(0xde7,'o[N['),'KJgXZ':function(S,T){return S+T;},'KHvzx':ai(0xdd5,'^1(%')+'B','RNKzq':ai(0x882,'K9Qw')+ai(0xe71,'%%$6')+ai(0x4f5,'e[5o')+'g','IUqPO':function(S,T){return S+T;},'xvtjb':function(S,T){return S!==T;},'nkUHW':ai(0xc90,'^1(%')+'s','BtgdR':function(S,T){return S(T);},'NlcyN':'Clea'+ai(0xa7a,'e[5o')+ai(0xd52,'k[!J')+'elds'+ai(0x685,'lN7q')+'\x20sta'+ai(0x5ee,'1[R^')+ai(0x6d7,'lw7*'),'TTmxC':ai(0x5e3,'h81]')+ai(0x7c4,'[v!t')+ai(0x38d,'*RuJ')+ai(0xed4,'6cMO'),'rDRAI':ai(0x298,'D6Ng')+ai(0xcc3,'7pUY'),'elwim':ai(0xb39,'e[5o')+ai(0xd7f,'sj5%'),'XvhXj':ai(0x33c,'Blg8')+ai(0x29c,'*RuJ'),'fBYqv':ai(0x9e8,'sj5%')+'WEAK','AEoUK':ai(0x723,'D6Ng')+ai(0x3fe,'MXw)')+'RK','GhXBV':function(S,T){return S!==T;},'KVtfb':ai(0x5ea,'h81]')+'b','wbMLM':function(S,T){return S===T;},'skryu':function(S,T){return S===T;},'WyLUS':function(S,T){return S(T);},'dHzoW':ai(0xbc3,'a39O')+'k','vAdzq':ai(0xd4a,'lk$d'),'iscSA':ai(0x985,'l@jE'),'AjsYu':ai(0xd09,'%%$6'),'JCuJr':function(S,T){return S(T);},'HWYQJ':function(S,T){return S===T;},'Bpiub':ai(0x374,'a9Y1')+'S','EziUp':ai(0xe4c,'vPX^')+'y','CFfpf':ai(0x98f,'q8Bo')+'\x20fie'+ai(0x9cd,'I@]]')+'s\x20re'+ai(0x7ca,'e[5o')+ai(0xe21,'(#Eo')+ai(0x345,'jFI9')+ai(0x927,']Pkk')+ai(0xdd6,'Z&At')+ai(0x344,'YXJ%')+'t\x20bl'+ai(0x741,'2y3n'),'kBsXN':function(S,T,U){return S(T,U);},'RAHth':function(S,T){return S!==T;},'rMlHA':'wOXu'+'c','kCUSd':function(S,T){return S+T;},'ykXzC':function(S){return S();},'MlkJB':function(S,T){return S!==T;},'YBlEs':ai(0xc84,'Z&At')+'o','KLexk':ai(0xa76,'z%E0')+'X','HsFsW':ai(0x3e3,'V2V&'),'aBrDm':ai(0xc0f,'%3rk')+'u','GAoNq':ai(0x31b,'lk$d')+'k','kWSza':function(S,T){return S(T);},'UdnnB':function(S,T){return S!==T;},'aLznS':ai(0xe90,']Pkk')+'O','whZkV':ai(0x330,'l@jE'),'weKjW':ai(0x1ca,'2y3n')+'t','zLJih':function(S,T){return S!==T;},'zbnQk':function(S,T){return S(T);},'vmaaY':function(S,T,U){return S(T,U);},'YZBNd':ai(0x417,'YXJ%')+ai(0xcb7,'G^2z')+ai(0x8ec,'PS&p')+ai(0x38f,'I@]]'),'yGuID':ai(0x4b3,'[v!t')+'d-in'+ai(0x1da,'2y3n')+ai(0xf39,'lw7*'),'laKdD':ai(0x27e,']Pkk')+ai(0xc40,'h81]'),'BvlMD':function(S,T){return S===T;},'PhPDE':'xaQl'+'H','KnnOo':function(S,T,U){return S(T,U);},'WAcpK':function(S){return S();},'aTSBf':function(S,T){return S<T;},'YzeYp':function(S,T){return S-T;},'xhwPG':function(S,T){return S+T;},'cLCEU':ai(0x201,'^1(%')+'f','mfXfh':function(S){return S();},'LAILw':function(S,T){return S!==T;},'qPsjT':ai(0x4c6,'#QaB')+'S','xlvmS':ai(0xf3e,'lk$d')+'p','rEejH':function(S,T){return S(T);},'avmFn':ai(0xc0e,'PS&p'),'zDLSC':ai(0xb6a,'lN7q'),'lwEBx':ai(0x69b,'Blg8'),'Jsrdj':'What'+ai(0xf44,'qDi)')+'this','SQCJn':ai(0xd54,'^1(%')+ai(0x9d4,'%3rk')+ai(0xa62,'q8Bo')+ai(0xf0f,'(#Eo'),'Jyjah':ai(0xf04,'G^2z')+ai(0xd3f,'k[!J')+'cede'+ai(0xc78,'%3rk')+ai(0x226,'I@]]')+ai(0x3fd,'!h#8')+'s','wbGoY':'Infe'+ai(0xbf7,'0PnE')+ai(0xbe1,'ooPv')+ai(0xeae,'lk$d'),'EVFPI':ai(0x21a,'jFI9')+ai(0x7df,'lw7*')+ai(0x370,'lw7*'),'yQqnp':ai(0xebe,'#QaB')+ai(0x409,'z%E0')+ai(0x555,'l@jE'),'ndnMV':ai(0x924,'a9Y1')+ai(0xc15,'V2V&')+'ER','GUNdz':ai(0xca7,'ooPv')+ai(0x2f0,'sj5%')+ai(0x185,'7pUY'),'cPIrl':ai(0xbbc,'6cMO')+'FEEL'+ai(0xdbe,'lw7*'),'NDcAv':ai(0xbf2,'!h#8')+ai(0x7bd,'Blg8')+'RMAT'+'ION','gnUbs':ai(0x83e,'z%E0')+ai(0x9f0,'#QaB')+ai(0x84d,'!h#8')+'K','bZIQV':ai(0x49d,'(#Eo')+ai(0x4ef,'(#Eo')+ai(0x945,'MXw)')+ai(0x92a,'B2Qs')+ai(0x948,'ooPv')+'y','bJAWG':ai(0xae3,'#QaB')+ai(0x643,'a9Y1')+'\x20Art'+ai(0xbe5,'lk$d')+'t','epnPh':ai(0x7bc,'t]Z(')+ai(0xc32,'lk$d')+ai(0x811,'!#qZ')+ai(0xa8b,'MXw)')+ai(0x550,'o[N[')+'arti'+ai(0x2c4,']Pkk')+ai(0xd08,'2y3n')+ai(0xc03,'lk$d')+ai(0xda4,'lw7*')+'reci'+ai(0x979,'k[!J')+ai(0x7bf,'7pUY')+ai(0x652,'6cMO')+ai(0xd83,'V2V&')+ai(0xa42,'K9Qw')+ai(0xb96,'k[!J')+ai(0x5de,'dBMV')+ai(0x41e,'6cMO')+'.','XqDVb':ai(0x8fc,'PS&p')+'ree-'+ai(0xb37,'k[!J')+'\x20cap'+ai(0xc71,'*RuJ')+ai(0xf62,'a9Y1')+ai(0x986,'qDi)')+ai(0xf26,'D6Ng')+ai(0x41b,'k[!J')+'r\x20B2'+'B\x20cl'+ai(0x4de,'K9Qw')+ai(0x9a8,'L4rB')+ai(0xb94,'(#Eo')+ai(0x385,'a39O')+ai(0x999,'PS&p')+ai(0x446,'(#Eo')+ai(0xe95,'%%$6')+'\x22','tFgeS':ai(0x3bc,'sxrM')+ai(0xd8b,'sj5%')+ai(0xe83,'YXJ%')+ai(0xa6e,'Ux(P')+ai(0x4c1,'q8Bo')+'uld\x20'+ai(0xe5d,'PS&p')+ai(0xa39,'PS&p')+'\x20any'+ai(0x469,'s82t')+ai(0xa3e,'L4rB')+ai(0x367,']Pkk')+ai(0x454,'0PnE')+ai(0x342,'MXw)')+ai(0xb46,'lN7q')+ai(0xab7,'sj5%')+ai(0xe9b,'qDi)')+ai(0xe1c,'Ux(P')+ai(0xcc0,'ooPv')+ai(0xe3e,'%%$6')+ai(0x4f4,'Z&At')+'.','SjAvj':ai(0x6a0,'lN7q')+ai(0xb23,'%%$6')+'ge\x20e'+ai(0x98a,'h81]')+ai(0xa33,'I@]]')+ai(0xe80,'PS&p')+ai(0x75b,'ooPv')+ai(0x2b0,'e[5o')+ai(0x471,'Blg8')+ai(0xcbb,'q8Bo')+'pitc'+ai(0xcb8,'*TyZ')+ai(0x7d3,'(#Eo')+ai(0x49e,'#QaB')+'licy'+ai(0xbe2,'q8Bo')+ai(0x3a1,'vPX^')+ai(0x89a,'k[!J')+ai(0x426,'t]Z(')+'\x22a\x20r'+ai(0x37f,'dBMV')+ai(0xc3b,'o[N['),'hFTVT':'Not\x20'+ai(0xd7e,']Pkk')+ai(0xecf,'YXJ%')+ai(0x3ef,'G^2z')+ai(0xab0,'%3rk')+ai(0xd59,'Z&At')+ai(0xf41,'7pUY')+ai(0x1d3,'*RuJ')+'orma'+'t,\x20t'+ai(0xa80,'(#Eo')+ai(0x4b1,'sxrM')+ai(0x82e,'MXw)')+ai(0x34d,'(#Eo')+'who\x20'+ai(0xd1c,'a39O')+ai(0xed8,'%3rk')+'r.','dTGzt':ai(0x4ee,'2y3n')+ai(0x2e4,'qDi)')+ai(0x620,'t]Z(')+ai(0xd56,'!#qZ')+ai(0x646,'!h#8')+'\x20spe'+ai(0x9ea,'%3rk')+ai(0x424,'sxrM')+ai(0x810,'*RuJ')+ai(0x71d,'lk$d')+ai(0x797,'!#qZ')+ai(0xa68,'lw7*')+ai(0xad3,'Ux(P')+ai(0xae0,'ooPv')+ai(0x7d4,'l@jE')+ai(0x2a1,'L4rB')+'.','BggbV':ai(0xe36,'D6Ng')+ai(0xedf,'*TyZ')+ai(0xd4b,'G^2z')+ai(0x215,'a9Y1')+ai(0x540,'PS&p')+ai(0x996,'I@]]')+ai(0x369,'l@jE')+ai(0xa92,'[v!t')+ai(0xc98,'lw7*')+ai(0x8df,'sxrM')+ai(0x5ab,'*RuJ')+ai(0xe0c,'z%E0')+ai(0x1ef,'!h#8')+ai(0x448,']Pkk')+ai(0x95d,'MXw)')+ai(0x4b6,'V2V&')+ai(0x2b1,'s82t')+'ow-u'+ai(0x39a,'a9Y1')+ai(0xafe,'K9Qw'),'oeNDn':ai(0x496,'*TyZ')+ai(0x874,'l@jE')+ai(0x824,'G^2z')+ai(0x638,'o[N[')+ai(0x290,'Z&At')+ai(0xdc9,'(#Eo')+ai(0x26a,'dBMV')+'ins,'+'\x20not'+'\x20wha'+ai(0x35d,'t]Z(')+ai(0x6e1,'!h#8')+ai(0xb60,'PS&p')+ai(0x22e,'2y3n')+'tate'+ai(0x81d,'#QaB')+ai(0x19a,'lN7q')+ai(0x3ee,'Z&At')+',\x20no'+ai(0xea8,'7pUY')+ai(0xa0d,'!#qZ')+ai(0x8d3,'6cMO')+'t.','NmIlq':ai(0xc6f,'%%$6')+ai(0x615,'G^2z')+ai(0xcd7,'s82t')+ai(0xe51,'Ux(P')+ai(0x268,']Pkk')+ai(0x596,'z%E0')+'s\x22\x20—'+ai(0x9b2,'0PnE')+ai(0x21b,'B2Qs')+ai(0xe45,'PS&p')+ai(0xf52,'%%$6')+ai(0xcf4,'Ux(P')+ai(0xbb6,'Blg8')+'iden'+ai(0x78e,'L4rB')+ai(0xe30,'YXJ%')+ai(0xa4e,'1[R^')+'e\x20th'+ai(0x31a,'k[!J')+ai(0x42a,'t]Z(')+ai(0x842,'vPX^')+ai(0x2e5,'D6Ng'),'YnARS':ai(0x5e5,'I@]]')+ai(0xdda,'sxrM')+ai(0x4df,'*TyZ')+ai(0xa8d,'7pUY')+ai(0x46f,'sxrM')+ai(0x2ae,'YXJ%')+ai(0x4ba,'!#qZ')+'\x20tak'+ai(0x316,'L4rB')+ai(0x1fb,'L4rB')+ai(0x5d0,'I@]]')+'tep\x20'+ai(0xee8,']Pkk')+ai(0x852,'6cMO')+ai(0x601,'Blg8')+ai(0xde1,'PS&p')+ai(0x6fa,'t]Z(')+'uppo'+ai(0xbce,'1[R^')+ai(0xf22,'7pUY')+ai(0x681,'lN7q'),'kclBl':ai(0xa57,'s82t')+ai(0x8e5,'sxrM')+ai(0x661,'ooPv')+'is','oqCvJ':ai(0xe94,'7pUY')+ai(0x684,'*TyZ')+ai(0x1d8,'B2Qs')+ai(0xbf9,'dBMV'),'rETTH':ai(0xf24,'1[R^')+ai(0xedd,'Ux(P')+ai(0x762,'lk$d')+ai(0xab5,'a39O')+ai(0x578,'*RuJ')+'not\x20'+ai(0x277,'z%E0')+ai(0x62a,'(#Eo')+ai(0x205,'L4rB')+ai(0x7a3,'K9Qw')+ai(0x206,'e[5o')+ai(0x784,'lw7*')+ai(0x4d9,'PS&p')+ai(0xebd,'L4rB')+ai(0x4d1,'!h#8')+ai(0x5dd,'YXJ%')+ai(0xe22,'B2Qs')+ai(0xad7,'K9Qw')+ai(0x46a,'G^2z')+ai(0x7d8,'%3rk')+ai(0xd97,'Blg8')+ai(0xdaa,'a39O')+ai(0x603,'Ux(P')+ai(0x2cd,'dBMV')+ai(0xce8,'sxrM'),'MYDYs':ai(0x51f,'Z&At')+'enou'+ai(0xa19,'B2Qs')+ai(0xdb0,'2y3n')+ai(0xeeb,'a9Y1')+ai(0xcb4,'!h#8')+ai(0xc02,'K9Qw')+ai(0xc46,'q8Bo')+ai(0x73a,'lN7q')+ai(0x9a4,'%%$6')+ai(0x9fe,'h81]')+ai(0x458,'sj5%')+ai(0xc1f,'ooPv')+ai(0x829,'PS&p')+ai(0x3d0,'L4rB')+ai(0xde0,'sxrM')+ai(0x915,'z%E0')+ai(0xc4a,'MXw)')+'e\x20to'+ai(0xb88,'6cMO')+'ilar'+ai(0x836,'MXw)')+'puts'+'.','jSKpW':ai(0x18f,'jFI9')+ai(0xcb0,'0PnE')+ai(0xd4e,'L4rB')+'cure'+ai(0xbfe,'Ux(P')+ai(0x34f,'h81]')+ai(0xb62,'vPX^')+ai(0x437,'dBMV')+ai(0x1f2,'V2V&')+ai(0x9e5,'G^2z')+ai(0xba9,'e[5o')+ai(0x8e4,'^1(%')+ai(0xb0d,'dBMV')+'s\x20se'+ai(0x353,'qDi)')+ai(0x5c4,'*TyZ')+ai(0x688,'t]Z(')+ai(0xc34,'^1(%')+ai(0xe56,'!#qZ')+ai(0xf1e,'q8Bo')+ai(0xb14,'!h#8')+ai(0x63b,'sj5%')+ai(0x3ba,'2y3n')+ai(0xe7b,'!#qZ')+'.','ZCreY':ai(0xb5b,'Ux(P')+ai(0x529,'^1(%')+ai(0xc9b,'0PnE')+ai(0x658,'Ux(P')+ai(0x923,'jFI9')+ai(0xe46,'G^2z')+ai(0x69f,'[v!t')+ai(0x64e,'D6Ng')+ai(0x258,'s82t')+ai(0xa47,'Z&At')+ai(0x237,'V2V&')+ai(0xec2,'z%E0')+ai(0x86b,'lw7*')+ai(0xd5f,'2y3n')+ai(0x80d,'a9Y1')+ai(0xf46,'ooPv')+ai(0x7f3,'(#Eo')+ai(0xa82,'s82t'),'hzsYL':'A\x20po'+'licy'+ai(0x4fe,'2y3n')+ai(0x9f8,'!h#8')+ai(0xa1a,'o[N[')+ai(0x79b,'vPX^')+ai(0xc28,'a9Y1')+ai(0xef6,'(#Eo')+ai(0xd5d,'I@]]')+ai(0x8ac,'Ux(P')+ai(0x533,'%%$6')+ai(0xd50,'YXJ%')+ai(0x6e8,'l@jE')+'unde'+ai(0x865,'%3rk')+ai(0xaef,'[v!t')+ai(0x37a,'lN7q')+ai(0x30d,'Z&At')+ai(0xcc4,'1[R^')+ai(0x7a0,'dBMV')+ai(0xefd,'lk$d')+'.','qZbkA':ai(0xa63,'D6Ng')+'\x20und'+'erst'+ai(0xeb8,'vPX^')+ai(0x59e,'2y3n')+ai(0xf0a,'B2Qs')+ai(0xcb6,'MXw)')+ai(0x2d4,']Pkk')+ai(0x387,'D6Ng')+ai(0x227,'I@]]')+'\x20but'+ai(0x41a,'V2V&')+ai(0xe43,'^1(%')+'\x20kno'+ai(0xa73,'%3rk')+ai(0x744,'a9Y1')+ai(0xa70,'Ux(P')+'r\x20me'+'thod'+ai(0x2cf,'dBMV')+ai(0x906,'Ux(P')+ai(0x53d,'lw7*')+ai(0x4db,'lN7q')+'.','pvGXy':ai(0x6b0,'7pUY')+ai(0x7f6,'6cMO')+ai(0xb02,'a9Y1')+ai(0x252,'sj5%')+ai(0x36c,'Z&At')+ai(0x9ef,'I@]]')+ai(0x33d,'MXw)')+ai(0xe65,'#QaB')+ai(0x8c3,'[v!t')+ai(0x57c,'a39O')+ai(0xd65,'lw7*')+ai(0xc54,'jFI9')+ai(0xa0b,'q8Bo')+ai(0x2fc,'0PnE')+ai(0x560,'%3rk')+ai(0xcb5,'1[R^')+ai(0x6b6,'PS&p')+ai(0xdc6,'V2V&')+'p.','RCLkX':ai(0xf49,'Ux(P')+'on\x20t'+ai(0xef0,'%%$6')+ai(0x84b,'t]Z(')+'\x20to\x20'+ai(0xdcc,']Pkk')+ai(0x770,'^1(%')+ai(0xcd1,'#QaB')+ai(0x43c,'0PnE')+ai(0x376,'!#qZ')+ai(0xaf7,'z%E0')+ai(0xc44,'e[5o')+ai(0x3f6,'1[R^')+ai(0xb51,'[v!t')+ai(0x889,'I@]]')+ai(0xf42,'7pUY')+ai(0xafa,'MXw)')+ai(0x2fd,'!h#8')+ai(0xe54,'YXJ%')+ai(0xbb7,'(#Eo')+ai(0xa18,'Z&At')+ai(0x53c,'G^2z')+ai(0xb61,'s82t')+ai(0x5a6,'1[R^')+ai(0xe41,'K9Qw')+ai(0xbc9,'7pUY')+ai(0x893,'vPX^')+'.','oNLJe':ai(0x2f8,'l@jE')+ai(0x2e2,'ooPv')+'es\x20t'+ai(0x7c9,'I@]]')+ai(0xa8c,'YXJ%'),'QIfum':ai(0x3c3,'K9Qw')+ai(0xa5e,'lk$d')+ai(0x64a,'Ux(P')+ai(0xd2d,'I@]]')+ai(0x392,'I@]]')+ai(0x690,'I@]]')+ai(0x972,'k[!J')+'hann'+ai(0x95c,'PS&p')+ai(0x4b2,'V2V&')+ai(0x487,'qDi)')+ai(0x5fa,'h81]')+ai(0x78d,'!h#8')+ai(0x314,'Z&At')+ai(0x3dc,'jFI9')+ai(0x68e,'MXw)')+ai(0xd0a,'2y3n')+'n.','JCdlg':ai(0x1c6,'0PnE')+'ted\x20'+ai(0x46c,'lN7q')+ai(0x490,'K9Qw')+ai(0xe70,'jFI9')+ai(0xd36,'#QaB')+ai(0x70b,'a9Y1')+ai(0x2fa,'lN7q')+ai(0xd71,'h81]')+ai(0x97f,'e[5o')+ai(0x6c3,'L4rB')+ai(0x20d,'*TyZ')+ai(0x8ee,'L4rB')+ai(0xb8d,'2y3n')+ai(0x4b4,'(#Eo')+ai(0x940,'h81]')+ai(0xba5,'Ux(P')+'on\x20a'+ai(0x194,'G^2z')+ai(0xa04,'o[N[')+ai(0xdb8,'I@]]')+ai(0x50c,']Pkk')+ai(0x6de,'I@]]')+ai(0x864,'I@]]'),'RMdwc':ai(0x839,'Ux(P')+ai(0x6b1,'sj5%')+ai(0x326,'dBMV')+ai(0x3b7,'#QaB')+ai(0x86e,'7pUY')+ai(0xbaf,'B2Qs')+ai(0xe6c,'%3rk')+'e\x20ex'+ai(0xe89,'K9Qw')+ai(0x748,'q8Bo')+ai(0x5d4,'dBMV')+ai(0x382,'lw7*')+ai(0x8de,'qDi)')+ai(0x525,'%%$6'),'ZhafV':ai(0x75e,'lw7*')+ai(0x396,'I@]]')+ai(0x8db,'lw7*')+ai(0xd1a,'V2V&')+'a\x20em'+ai(0x73b,'jFI9')+ai(0x377,'sxrM')+ai(0x198,'PS&p')+ai(0xe54,'YXJ%')+ai(0x1b9,'I@]]')+ai(0xc85,'lk$d')+ai(0x47b,'I@]]')+ai(0xbad,'PS&p')+ai(0x416,']Pkk')+ai(0x93a,'dBMV')+ai(0x247,'D6Ng')+ai(0x32e,'PS&p')+ai(0xa4f,'K9Qw')+ai(0x9d7,'k[!J')+ai(0x787,'Z&At')+ai(0x1ac,'s82t')+ai(0x3bd,'jFI9')+'r\x20in'+'\x20a\x20p'+'itch'+ai(0xa69,'!h#8')+'m.','nNesq':ai(0x7be,'k[!J')+'\x20pre'+ai(0x89f,'ooPv')+ai(0xdbd,'lk$d')+ai(0x9ac,'6cMO')+ai(0xddd,'Z&At')+ai(0x736,'*RuJ'),'YgjUw':ai(0x26d,'^1(%')+ai(0xeda,'PS&p')+ai(0x266,'V2V&')+ai(0x75c,']Pkk')+ai(0x5b2,'q8Bo')+ai(0xd73,'V2V&')+ai(0x30b,'YXJ%')+ai(0xdb1,'%%$6')+ai(0xd90,'(#Eo')+ai(0x29f,'dBMV')+ai(0xb01,'h81]')+ai(0x459,'e[5o')+'ter\x20'+ai(0x311,'z%E0')+ai(0xc83,'!h#8')+ai(0x69d,'h81]')+ai(0xbd6,'q8Bo')+ai(0xa87,'a39O')+ai(0x727,'[v!t')+'eith'+ai(0xd88,'K9Qw')+ai(0x9bb,'(#Eo')+ai(0x695,'%3rk')+ai(0x209,'7pUY')+ai(0xe6d,'1[R^')+ai(0x60c,'D6Ng')+ai(0x29a,'L4rB'),'sDUbo':ai(0x2a3,'B2Qs')+ai(0x7ae,'6cMO')+ai(0xa65,'[v!t')+ai(0x624,'lw7*')+ai(0xdf3,'I@]]'),'kjphv':ai(0xb3c,'MXw)')+ai(0xe9f,'*TyZ')+'e.\x20S'+ai(0x5f5,'D6Ng')+ai(0x445,'sxrM')+ai(0x722,'s82t')+ai(0x7b7,'lw7*')+ai(0x481,'!h#8')+ai(0xea1,'6cMO')+ai(0xdec,'#QaB')+ai(0x30e,'lN7q')+'amet'+ai(0x791,'e[5o')+ai(0xf23,'7pUY')+ai(0x7e5,'lw7*')+',\x20se'+ai(0xd16,'sxrM')+ai(0xa89,'qDi)')+ai(0x976,'*TyZ')+ai(0x1f5,'sxrM')+ai(0x394,'t]Z(')+'word'+'\x20cou'+ai(0x272,'2y3n'),'ucGeg':ai(0x9d2,'a39O')+ai(0xbb8,'l@jE')+ai(0x7e7,'t]Z(')+'page'+ai(0x289,'k[!J')+ai(0x3b1,'lk$d')+ai(0x3cb,'2y3n')+ai(0x6ad,'K9Qw')+'a\x20pr'+ai(0x1b0,'a39O')+ai(0x77e,'MXw)')+ai(0x7a4,'q8Bo')+'n,\x20a'+ai(0x263,'B2Qs')+ai(0x4a1,'*TyZ')+ai(0x583,'(#Eo')+ai(0xf3c,'jFI9')+ai(0x42f,'0PnE')+ai(0xa36,'(#Eo')+ai(0x3f3,'%3rk')+ai(0xc41,'1[R^')+ai(0x35c,'Z&At')+ai(0xdd0,'7pUY')+'.','rMndF':ai(0x54a,'MXw)')+ai(0xaa8,'B2Qs')+ai(0x8ea,'lN7q')+ai(0x46e,'MXw)')+ai(0x912,'vPX^')+ai(0x3cc,'YXJ%')+ai(0x188,'V2V&')+ai(0xf47,'PS&p')+ai(0x4ae,'%%$6')+ai(0x262,'ooPv')+ai(0x930,'lN7q')+ai(0x7f8,'s82t')+ai(0x726,'6cMO')+ai(0xb8f,'Blg8')+ai(0x516,'7pUY')+'ss.\x22'+ai(0x477,'!#qZ')+ai(0xdfd,'!#qZ')+ai(0x292,'dBMV')+ai(0x524,'s82t')+ai(0x1cd,'Ux(P')+ai(0xedb,'(#Eo')+ai(0x66f,'D6Ng')+'\x20bac'+ai(0x40d,'V2V&')+ai(0xef1,'!h#8')+ai(0xccb,'jFI9')+ai(0x737,']Pkk')+ai(0x1d4,'Blg8')+ai(0x331,'a9Y1')+ai(0xe5b,'B2Qs'),'IvDQP':'Not\x20'+ai(0x79f,'vPX^')+ai(0x667,'Z&At')+ai(0x6d0,'%3rk')+ai(0x69a,'s82t')+ai(0xe09,'jFI9')+'\x20Lis'+ai(0x452,'dBMV')+ai(0x806,'qDi)')+ai(0xd58,'qDi)')+'hree'+ai(0xa83,'(#Eo')+ai(0x833,'dBMV')+ai(0x9cb,'q8Bo')+ai(0xf01,'^1(%')+ai(0xf3f,'%%$6')+ai(0xb0c,'6cMO')+ai(0x77d,'Ux(P')+ai(0x32a,'k[!J')+ai(0xb2e,'lk$d')+ai(0xd82,'sj5%')+ai(0x2df,'7pUY')+ai(0x895,'!#qZ')+ai(0xb48,'1[R^')+ai(0xea9,'dBMV')+ai(0x9fd,'I@]]')+'eak.','XwpJd':ai(0x592,'I@]]')+ai(0xbf5,'#QaB')+ai(0x845,'%3rk')+ai(0xdeb,'G^2z')+ai(0xea4,'*RuJ')+ai(0x796,'a9Y1')+ai(0x419,'lk$d')+ai(0x2e6,'t]Z(')+ai(0xb87,'I@]]')+ai(0x464,'jFI9')+ai(0x90e,'h81]')+ai(0xec7,'K9Qw')+ai(0xbf6,'^1(%')+ai(0xa17,'*RuJ')+'none'+'.','yMrnA':ai(0x6d6,'1[R^')+ai(0x568,'vPX^')+ai(0xc35,'lN7q')+ai(0xe11,'YXJ%'),'sAtxj':ai(0x77f,'ooPv')+ai(0xd8f,'*TyZ')+'exac'+ai(0xaa7,'dBMV')+ai(0x67e,'o[N[')+ai(0x442,'dBMV')+ai(0x2ad,'6cMO')+ai(0x189,'[v!t')+ai(0xee1,'6cMO')+ai(0xf59,'q8Bo')+ai(0x6c6,'[v!t')+ai(0xe8a,'I@]]')+ai(0xa74,'t]Z(')+ai(0x566,'MXw)')+'ee\x20c'+ai(0x85a,'(#Eo')+ai(0xcdb,'jFI9')+ai(0xaa5,'%%$6')+ai(0x7c8,'q8Bo')+'e\x20te'+ai(0x56d,'[v!t')+'n.','qESas':ai(0x3eb,'Z&At')+ai(0xca2,'lw7*')+ai(0x8b8,'jFI9')+'e,\x20r'+'estr'+ai(0x229,'k[!J')+ai(0xdc0,'*RuJ')+ai(0xaad,'(#Eo')+ai(0xf5e,'h81]')+ai(0xbe0,'s82t')+ai(0xc33,'Blg8')+ai(0x7fe,'lw7*')+ai(0xa07,'[v!t')+ai(0xa7b,'z%E0')+ai(0x936,'!h#8')+ai(0xc2c,'B2Qs')+'\x20col'+ai(0x880,'lw7*')+ai(0x6ba,'L4rB')+ai(0xcbe,'qDi)')+ai(0x672,'a39O')+ai(0xe95,'%%$6'),'gUpDm':ai(0x751,'G^2z')+ai(0x76a,'7pUY')+ai(0xb44,'2y3n')+'t\x20to'+ai(0xb5a,'lk$d')+ai(0xa5f,'ooPv')+ai(0xaf1,'a9Y1')+ai(0x6fd,'I@]]')+'are\x20'+ai(0xb7a,'(#Eo')+'ity\x20'+ai(0x9c2,'h81]')+ai(0xb57,'o[N[')+ai(0x89c,'V2V&')+ai(0xa24,'V2V&')+ai(0x4dc,'I@]]')+ai(0x238,'Ux(P')+ai(0x9df,'t]Z(')+ai(0x66e,'lN7q')+ai(0x2c3,'1[R^')+ai(0x230,'[v!t')+ai(0xe18,'#QaB')+ai(0x5df,'z%E0')+ai(0xd1b,'D6Ng')+ai(0x9de,'k[!J')+ai(0x9e2,'z%E0'),'YCQWH':ai(0x919,'sj5%')+ai(0xa4d,'V2V&')+ai(0x664,'%3rk')+ai(0xcd8,'V2V&')+ai(0x5ff,'%3rk')+ai(0xd26,'lw7*')+ai(0x1c8,'6cMO')+ai(0xbca,'6cMO')+ai(0x9d6,'q8Bo')+ai(0xbee,'I@]]')+ai(0xbdb,'vPX^')+'nsti'+'tuti'+ai(0xece,'G^2z')+',\x20de'+ai(0xf28,'sj5%')+ai(0xb97,'lw7*')+'.\x20Or'+':\x20co'+ai(0xc7b,'V2V&')+ai(0x407,'e[5o')+'iona'+ai(0x2b7,'*RuJ')+ai(0xa77,'qDi)')+ai(0xb77,'V2V&')+ai(0x9dd,'1[R^')+'.','ndTeJ':'Too\x20'+'gene'+ai(0xc23,'D6Ng')+ai(0x282,'Blg8')+'ry\x20o'+ai(0xe64,'z%E0')+ai(0xd98,'Ux(P')+ai(0xcc1,'Z&At')+ai(0xadd,'a9Y1')+ai(0x756,'qDi)')+ai(0x95b,'K9Qw')+ai(0x1c9,'L4rB')+ai(0x86f,'Blg8')+ai(0x48b,'jFI9')+ai(0x1e1,'o[N[')+ai(0x502,'(#Eo')+ai(0xaf2,'a39O')+ai(0x4f7,'l@jE')+ai(0x45e,'jFI9')+ai(0x570,'G^2z')+ai(0xeea,'qDi)')+ai(0x275,'*TyZ')+ai(0xe01,'0PnE'),'eeuos':ai(0x878,'G^2z')+ai(0x60b,'^1(%')+ai(0xed0,'!#qZ')+ai(0x6ce,'lk$d')+ai(0x884,'dBMV')+ai(0x488,'L4rB')+ai(0xefe,'dBMV')+ai(0xbda,'MXw)')+ai(0x341,'V2V&')+ai(0xcce,'dBMV')+'m\x20lo'+ai(0x26b,'h81]')+'g\x20at'+ai(0x2f3,'%3rk')+ai(0xd37,'s82t')+ai(0x3d1,'k[!J')+ai(0xe9a,'lk$d')+ai(0x1c2,'lN7q')+ai(0xf11,'L4rB')+ai(0xa0c,'a9Y1')+ai(0x259,'dBMV')+'prov'+ai(0x24d,'^1(%'),'qsBxZ':ai(0x489,'lw7*')+ai(0x7fd,'0PnE')+ai(0x235,'k[!J')+'e','TPbru':ai(0xa5a,'sj5%')+ai(0x4c9,']Pkk')+ai(0x74f,'*TyZ')+ai(0xec3,'q8Bo')+'a\x20sp'+ai(0x8ef,'K9Qw')+ai(0x6a7,'^1(%')+'ubli'+ai(0x36b,'qDi)')+ai(0xa06,'L4rB')+ai(0xaee,'sxrM')+ai(0x19e,'lk$d')+'nsti'+'tuti'+ai(0x9d1,'Z&At')+ai(0x9bd,'(#Eo')+ai(0xb1b,'q8Bo')+'n\x20cu'+ai(0xa15,'YXJ%')+'e.','bXEbz':ai(0x970,'!#qZ')+ai(0xa27,'a9Y1')+ai(0x55a,'k[!J')+ai(0xc5b,'D6Ng')+ai(0xbc2,'*TyZ')+ai(0x79e,'D6Ng')+ai(0x80e,'2y3n')+ai(0x7ef,'Ux(P')+ai(0x8a0,'qDi)')+ai(0x565,'^1(%')+ai(0x1f0,'lw7*')+ai(0x8a7,'*RuJ')+ai(0x91a,'ooPv')+'welc'+ai(0x7fc,'PS&p')+ai(0x399,'PS&p')+'ment'+ai(0x6ed,'o[N[')+ai(0x72a,'z%E0')+'s\x20OE'+ai(0x743,'!h#8')+ai(0x261,'lw7*')+ai(0x3f1,'sxrM')+ai(0xc62,'qDi)'),'tHyxU':ai(0xc48,'2y3n')+ai(0xe5c,'lk$d')+ai(0xf30,'ooPv')+ai(0x2be,'B2Qs')+ai(0x9a3,'Blg8')+ai(0xed7,'[v!t')+ai(0x70c,'I@]]')+ai(0xabd,'^1(%')+ai(0xe32,'ooPv')+ai(0x25d,'MXw)')+ai(0x995,'^1(%')+ai(0xaf8,'l@jE')+ai(0xf3a,'!h#8')+ai(0x760,'%3rk')+ai(0x757,'l@jE')+ai(0x719,'YXJ%')+ai(0x8c4,'o[N[')+ai(0xd4f,'*TyZ')+ai(0x67d,'Ux(P')+ai(0xa6b,'sj5%')+ai(0x6d3,'YXJ%')+ai(0xf5f,'lk$d')+ai(0xc51,'(#Eo')+'\x22','JzWiA':ai(0x44b,'ooPv')+ai(0xa25,'[v!t')+ai(0x438,'lN7q')+ai(0x223,'a39O')+'Stat'+'e\x20a\x20'+ai(0x2ec,'o[N[')+ai(0x909,'sj5%')+ai(0x952,'YXJ%')+ai(0xd21,'6cMO')+ai(0xb53,'a39O')+ai(0xae1,'V2V&')+ai(0xd1e,'h81]')+ai(0x5e7,'lk$d')+'t\x20ca'+'n\x20be'+ai(0xf61,'YXJ%')+ai(0x562,'s82t')+'d.','lNyrh':ai(0x211,'sxrM')+ai(0xab1,'jFI9')+ai(0x77c,'K9Qw')+ai(0x5ef,'lk$d')+ai(0x3e0,']Pkk')+'rd\x20t'+ai(0xd93,'sxrM')+'with'+ai(0xdd9,'K9Qw')+ai(0x6bc,'k[!J')+ai(0xe14,'V2V&')+ai(0xb8c,'L4rB')+'gle\x20'+'word'+ai(0x50e,'lw7*')+ai(0x34a,'[v!t')+ai(0xa21,'B2Qs')+ai(0x40c,'6cMO')+ai(0xade,'vPX^')+ai(0xcf5,'0PnE')+ai(0x8cd,'2y3n')+ai(0xc6c,'I@]]')+ai(0xa58,'q8Bo')+ai(0xd14,'lw7*')+'in\x206'+ai(0xc45,'1[R^')+ai(0x6ac,'G^2z')+ai(0xee7,'7pUY')+ai(0x1b4,'*TyZ')+'ding'+'.','MfyPO':ai(0x6d4,'sxrM')+ai(0x51c,'Ux(P')+ai(0x8f7,'e[5o')+ai(0xc39,'q8Bo')+ai(0xa86,'lN7q')+ai(0x857,'s82t')+ai(0xf10,'e[5o')+'act\x20'+ai(0xee6,'D6Ng')+ai(0xbb9,'[v!t')+ai(0xb3e,'[v!t')+ai(0xa4c,'e[5o')+ai(0xcf6,'lN7q')+ai(0xbd0,'jFI9')+'thou'+'t\x20re'+ai(0xaed,'ooPv')+ai(0x7b6,'a9Y1')+ai(0xbf4,'s82t')+ai(0x463,'7pUY')+ai(0xbe7,'MXw)')+ai(0xc06,'2y3n'),'knMgx':ai(0x869,'Blg8')+ai(0x684,'*TyZ')+ai(0xda9,'qDi)')+ai(0xd49,'sj5%')+'rk','XbCwu':'Too\x20'+ai(0x98d,'[v!t')+ai(0x6a6,'s82t')+ai(0x478,'V2V&')+ai(0xee6,'D6Ng')+ai(0x1d0,'MXw)')+ai(0x63d,']Pkk')+ai(0x801,'7pUY')+ai(0xe26,'dBMV')+ai(0xc1e,'*TyZ')+ai(0xbd7,'jFI9')+ai(0x4e4,'lk$d')+'t\x20wo'+ai(0xf37,'sj5%')+ai(0x8dc,'Blg8')+ai(0x617,'YXJ%')},k=(function(){const aj=ai,S={'OLWtO':aj(0x5db,'K9Qw'),'ihhXC':j[aj(0xf2e,'s82t')+'K'],'rRPNf':j['IfHa'+'X'],'jhZqT':j[aj(0x2ea,'*TyZ')+'G'],'YzPxK':aj(0x8bf,'z%E0')+aj(0xbec,'h81]')+aj(0x6c1,'h81]')+aj(0x430,'l@jE'),'rffRL':function(U,V){return j['Qtet'+'O'](U,V);},'nRnGv':aj(0x1f8,'lw7*'),'LzXOa':function(U,V){return U!==V;},'rLxPN':j[aj(0xc56,'sj5%')+'p'],'kDuOh':j[aj(0x7fb,'Blg8')+'Z'],'mClQu':'ehzd'+'C'};if(j['tuTk'+'y']!==j[aj(0x358,'ooPv')+'y']){if(r[aj(0x3f9,'!#qZ')](s)){const U={};U[aj(0xb35,'jFI9')+aj(0xe24,'B2Qs')]=l[aj(0x841,'Blg8')+aj(0x718,'k[!J')],U[aj(0xbe3,'%3rk')+aj(0x8e2,'K9Qw')]=m[aj(0x25c,'ooPv')+aj(0x9ad,'*RuJ')],k[aj(0x427,'PS&p')](U);}}else{let U=!![];return function(V,W){const ak=aj;if(S[ak(0x89d,']Pkk')+'a'](ak(0xb0e,'h81]')+'C',S[ak(0xe97,'ooPv')+'u'])){const Y=o[ak(0xa29,'o[N[')+ak(0x947,'Z&At')+ak(0x7f7,'o[N[')+'Id'](p);if(Y)Y[ak(0x5d1,'h81]')+'e']='';}else{const Y=U?function(){const al=ak,Z={'dHIMr':S['OLWt'+'O'],'SugpX':function(a1,a2){return a1===a2;},'ghnOz':S[al(0x1d9,'#QaB')+'C'],'YMXxL':S[al(0xa2b,'2y3n')+'f'],'VNFWp':S['jhZq'+'T'],'HKqxR':S[al(0xec9,'D6Ng')+'K'],'DckgX':function(a1,a2){const am=al;return S[am(0xf5c,'*TyZ')+'L'](a1,a2);},'HMTtO':S[al(0x771,'D6Ng')+'v']};if(S[al(0xe4f,'qDi)')+'a'](S[al(0xb13,'#QaB')+'N'],S[al(0xb06,'k[!J')+'h'])){if(W){const a1=W[al(0xb5f,'vPX^')+'y'](V,arguments);return W=null,a1;}}else{const a2=s===Z[al(0xc0a,'e[5o')+'r']?al(0x8c1,'a9Y1')+al(0x390,'q8Bo'):'#8b1'+al(0xef3,'Ux(P'),a3=Z[al(0x9c8,'z%E0')+'X'](t,Z[al(0x64d,'dBMV')+'r'])?Z[al(0xdab,'a9Y1')+'z']:Z[al(0xd6e,'qDi)')+'L'],a4=u['crea'+'teEl'+al(0x5a1,'PS&p')+'t'](Z[al(0xeca,'dBMV')+'p']);a4[al(0xc91,'Z&At')+'sNam'+'e']=Z[al(0x92c,'#QaB')+'R'],a4[al(0xce0,'#QaB')+'e'][al(0x1ec,'l@jE')+al(0xbbb,'MXw)')]='font'+al(0x1e6,'[v!t')+'ily:'+al(0x31e,'#QaB')+al(0x5f0,'qDi)')+al(0xb6b,'7pUY')+al(0x372,'Z&At')+al(0x479,'(#Eo')+al(0x503,'a39O')+'-siz'+al(0x8a6,'*RuJ')+al(0x302,'jFI9')+al(0x7b1,']Pkk')+al(0x554,'qDi)')+'acin'+al(0x8c6,'2y3n')+al(0xcd9,'h81]')+al(0x52d,']Pkk')+al(0xb70,'z%E0')+al(0x3cd,'%%$6')+al(0xbfa,'s82t')+al(0xc89,'%%$6')+al(0x56c,'h81]')+al(0xde2,'MXw)')+al(0x746,'0PnE')+a2+(al(0x375,'qDi)')+al(0x485,'q8Bo')+al(0xccf,'#QaB')+al(0x368,'1[R^')+al(0x79d,'Blg8')+al(0xa56,'vPX^')+'p:4p'+'x;'),a4[al(0xe2e,'MXw)')+al(0xe35,'#QaB')+al(0x33e,'V2V&')]=Z[al(0x4fb,'L4rB')+'X'](Z['Dckg'+'X']('⚠\x20'+a3,Z['HMTt'+'O']),j[0x17b6+-0x2d5+-0x14e1][al(0x420,'lk$d')+'age']),k[al(0x7a7,'G^2z')+al(0x1fe,'I@]]')+'de']['inse'+al(0xcd0,'(#Eo')+al(0xa94,'lN7q')](a4,l[al(0x725,'MXw)')+al(0xd8a,'Ux(P')+al(0xcad,'D6Ng')]);}}:function(){};return U=![],Y;}};}}()),l=j[ai(0x4c3,'Blg8')+'N'](k,this,function(){const an=ai;return l[an(0xcbc,'sj5%')+an(0x9c6,'7pUY')]()['sear'+'ch'](j[an(0x51a,'*TyZ')+'S'])[an(0x595,'(#Eo')+an(0x66a,'K9Qw')]()[an(0xc79,'t]Z(')+an(0xf38,'0PnE')+an(0x84f,'(#Eo')](l)[an(0xe7c,'1[R^')+'ch'](an(0xc64,'h81]')+'+)+)'+'+)+$');});l();let m=0x18d1*0x1+0x8b6+-0x2187;const n=-0x2668+0x61*0x32+0x137d*0x1,o={};o['id']='f0',o[ai(0xe15,'a9Y1')+'ts']=[j['IHMe'+'R'],'f1b'];const p={};p['id']='f1',p[ai(0xf21,'0PnE')+'ts']=[j[ai(0x309,'q8Bo')+'V'],ai(0x265,'B2Qs'),j[ai(0xeb5,'B2Qs')+'q']];const q={};q['id']='f2',q[ai(0x19b,'lw7*')+'ts']=[ai(0x6a1,'lN7q'),j[ai(0xd1d,'L4rB')+'i']];const r={};r['id']='f3',r[ai(0x686,'I@]]')+'ts']=[j[ai(0x3dd,']Pkk')+'A'],ai(0x4c8,'(#Eo'),j['LzmY'+'O']];const s={};s['id']='f4',s[ai(0xe8f,'k[!J')+'ts']=[j['AjsY'+'u'],j[ai(0x4e8,'h81]')+'w'],j[ai(0xe67,'t]Z(')+'O']];const t={};t['id']='f5',t[ai(0x4e5,'s82t')+'ts']=[j[ai(0x5fe,']Pkk')+'n'],ai(0x18c,'L4rB')];const u={};u['id']='f6',u[ai(0x19b,'lw7*')+'ts']=[j[ai(0xbd5,'B2Qs')+'C'],j[ai(0xa81,'!#qZ')+'x']];const v=[o,p,q,r,s,t,u],w=[[j[ai(0x781,'!#qZ')+'j'],j[ai(0xdef,'K9Qw')+'n']],[ai(0x879,'I@]]')+ai(0xacb,'t]Z(')+ai(0x798,'YXJ%')+'is',j[ai(0x20a,'*RuJ')+'T'],ai(0x745,'!#qZ')+ai(0x391,'qDi)')+ai(0x88f,'sj5%')+ai(0x97a,'Z&At')+'r'],[j[ai(0xcf1,'Z&At')+'r'],j[ai(0xdf2,'D6Ng')+'h']],[j[ai(0x6ea,'z%E0')+'Z'],j[ai(0x663,'*TyZ')+'b'],j[ai(0x58f,'sxrM')+'m']],[j[ai(0x993,'z%E0')+'d'],j[ai(0xf36,'s82t')+'E'],j[ai(0x493,'!#qZ')+'A']],[j[ai(0x959,'MXw)')+'c'],j[ai(0x7e9,'lN7q')+'Y']],[j[ai(0x80b,'#QaB')+'t'],j[ai(0xc7d,'0PnE')+'I']]],x=[j['yQqn'+'p'],j[ai(0x2d0,'t]Z(')+'V'],j[ai(0x7b9,'G^2z')+'z'],'THE\x20'+ai(0x408,'a9Y1')+ai(0xde8,'Z&At')+ai(0x83d,'0PnE'),j['cPIr'+'l'],j[ai(0x3e1,'t]Z(')+'v'],j[ai(0x94e,'*RuJ')+'s']];function y(S){const ao=ai,T=j[ao(0xd64,'!h#8')+'H'][ao(0xa13,'V2V&')+'t']('|');let U=-0x1*-0x1477+0xa4c*0x3+-0x335b*0x1;while(!![]){switch(T[U++]){case'0':m=S;continue;case'1':document['getE'+ao(0x245,'G^2z')+ao(0xc3f,'qDi)')+'Id'](v[m]['id'])[ao(0x98b,'!#qZ')+ao(0x32d,'7pUY')+'t'][ao(0xb83,'6cMO')](j[ao(0x47f,'vPX^')+'J']);continue;case'2':const V={};V[ao(0xb6d,'1[R^')]=0x0,V[ao(0xd5b,'Ux(P')+ao(0x802,'0PnE')]=j[ao(0x740,'ooPv')+'z'],window[ao(0xf40,'6cMO')+'llTo'](V);continue;case'3':j[ao(0x939,'ooPv')+'l'](B);continue;case'4':document[ao(0x585,'V2V&')+ao(0xccc,'e[5o')+ao(0x82b,'*TyZ')+'Id'](v[m]['id'])['clas'+ao(0x5dc,'sxrM')+'t']['remo'+'ve'](ao(0x4a4,'7pUY')+'ve');continue;}break;}}function z(){const ap=ai;if(j[ap(0xbdd,'a39O')+'V'](m,j[ap(0x59f,'!h#8')+'g'](n,-0xc*-0x140+-0x18fb*-0x1+0x11*-0x25a)))j['ctXr'+'w'](y,m+(0x6*0x10e+-0x2216+0x1bc3));}function A(){const aq=ai,S={};S[aq(0x580,'0PnE')+'q']=j[aq(0x93d,'o[N[')+'j'];const T=S;if(j[aq(0x228,'2y3n')+'x'](j[aq(0xab6,'[v!t')+'K'],aq(0xb75,'*RuJ')+'P')){if(j[aq(0x716,'Z&At')+'w'](m,-0x537*-0x7+-0x100e+0x5*-0x417))y(j[aq(0x186,'z%E0')+'u'](m,-0x1868+0x3c*-0x9e+0x3d71));}else k[aq(0xe2e,'MXw)')+aq(0xcf0,'Z&At')+aq(0xd0b,'a39O')]=T[aq(0x254,'ooPv')+'q'];}function B(){const ar=ai;document[ar(0x47e,'z%E0')+ar(0xda2,'jFI9')+ar(0x653,'^1(%')+ar(0x57e,'lw7*')](j[ar(0xaea,'q8Bo')+'i'])[ar(0x7da,'ooPv')+ar(0xc5a,'z%E0')]((S,T)=>{const at=ar,U={'CBflN':function(W,X){const as=a0d;return j[as(0x88c,'0PnE')+'U'](W,X);},'keUNb':j[at(0x7e3,'lk$d')+'b']};if(j[at(0x7c0,'k[!J')+'x'](j[at(0x916,'sj5%')+'v'],j[at(0x5a4,'G^2z')+'t'])){if(T[at(0x679,'a9Y1')+at(0xc8e,'!#qZ')](j)){const W=U['CBfl'+'N'](q,r);if(!W)return s;const {score:X}=t(u,W);if(X!==U[at(0xe07,'a9Y1')+'b'])return v;}}else{S[at(0x9dc,'l@jE')+'sLis'+'t'][at(0x8cb,'K9Qw')+'ve'](j[at(0xd3b,'dBMV')+'J'],j[at(0x260,'Ux(P')+'P']);if(T===m)S[at(0x605,'s82t')+at(0x7aa,'G^2z')+'t'][at(0xaa1,'PS&p')](j[at(0x9eb,']Pkk')+'J']);else{if(T<m)S[at(0x531,'a9Y1')+'sLis'+'t'][at(0x3b4,'Ux(P')](j[at(0xb30,'*RuJ')+'P']);}}});}function C(S){const au=ai,T=document['getE'+au(0x6f5,'D6Ng')+au(0x465,'z%E0')+'Id'](S);return T?T[au(0x6aa,'a9Y1')+'e'][au(0xec1,'e[5o')]():'';}function D(){const ax=ai,S={'Rsmsr':function(W,X){const av=a0d;return j[av(0x88c,'0PnE')+'U'](W,X);},'xrQfM':function(W,X){const aw=a0d;return j[aw(0x5c2,'ooPv')+'x'](W,X);},'PvJBR':j[ax(0x76d,'YXJ%')+'c']},T=document[ax(0x585,'V2V&')+ax(0xf31,'MXw)')+ax(0x465,'z%E0')+'Id'](j[ax(0x523,'qDi)')+'v']);let U=[],V=![];v['forE'+ax(0xdd3,'lk$d')]((W,X)=>{const aB=ax,Y={'XNGsA':function(a0,a1){const ay=a0d;return S[ay(0xdf4,'t]Z(')+'r'](a0,a1);},'zyQNg':function(a0,a1){const az=a0d;return S[az(0x7e1,'h81]')+'M'](a0,a1);},'CmrPd':function(a0,a1){const aA=a0d;return S[aA(0xcaa,'6cMO')+'M'](a0,a1);}},Z=W[aB(0x19b,'lw7*')+'ts'][aB(0x3be,'jFI9')]((a0,a1)=>{const aC=aB,a2=Y[aC(0x5a0,'l@jE')+'A'](C,a0);return a2?Y[aC(0x1eb,'2y3n')+'g'](Y['zyQN'+'g'](Y['CmrP'+'d']('\x20\x20',w[X][a1][aC(0x650,'#QaB')+aC(0x35e,'MXw)')+aC(0xba8,'h81]')]()),':\x20'),a2):null;})[aB(0x26f,'6cMO')+'er'](Boolean);Z[aB(0x858,'s82t')+'th']&&(V=!![],U[aB(0x3ca,'Blg8')](S[aB(0x65a,'^1(%')+'M'](S[aB(0x3aa,'D6Ng')+'R'],x[X])),U[aB(0x455,'sxrM')](...Z),U[aB(0x7a6,'6cMO')](''));});if(!V){T['inne'+ax(0x9c4,'#QaB')+'L']='<spa'+ax(0x828,'B2Qs')+'ass='+ax(0xf3b,'!#qZ')+ax(0xad6,'%3rk')+ax(0x9a6,'lk$d')+ax(0x56b,'lk$d')+ax(0x296,'jFI9')+ax(0x88e,'a9Y1')+ax(0xd66,'qDi)')+'\x20fie'+ax(0xd80,'G^2z')+ax(0xe6f,'0PnE')+'ur\x20t'+ax(0xe52,'YXJ%')+'stru'+ax(0x87f,'1[R^')+ax(0xa0f,'L4rB')+ax(0xf34,'#QaB')+ax(0xb98,'L4rB')+ax(0x2da,'vPX^')+ax(0x4c4,'7pUY')+'real'+'\x20tim'+ax(0x752,'lk$d')+ax(0x553,'sj5%')+'>';return;}T[ax(0x286,'*RuJ')+ax(0x3f0,'[v!t')+ax(0x9fc,'z%E0')]=U[ax(0x991,'YXJ%')]('\x0a');}function E(){const aD=ai,S={'ZdViG':function(W,X){return j['tPxv'+'j'](W,X);},'dIysV':j[aD(0x3e2,'h81]')+'U'],'AvIzc':function(W,X){const aE=aD;return j[aE(0x1ae,'a9Y1')+'H'](W,X);},'AZarl':function(W,X){const aF=aD;return j[aF(0x715,'Z&At')+'V'](W,X);}},T=W=>C(W);let U=j[aD(0x5d5,'z%E0')+'H'](j[aD(0x5e0,'G^2z')+'W'](j[aD(0xcc9,'z%E0')+'Q'],'─'[aD(0xe55,'t]Z(')+'at'](0x255f+0x165*-0x17+-0x510)),'\x0a\x0a');const V=[{'title':j[aD(0x58e,'G^2z')+'T'],'rows':[[j['teiO'+'B'],j[aD(0xcbf,'B2Qs')+'V'](T,j[aD(0x866,'lk$d')+'R'])],[aD(0x279,'a39O')+aD(0xefb,'K9Qw')+'must'+aD(0x405,'D6Ng'),j[aD(0x9c1,'I@]]')+'U'](T,j[aD(0xa03,'6cMO')+'X'])]]},{'title':j[aD(0x26c,'G^2z')+'Y'],'rows':[[aD(0xcbd,'a9Y1')+aD(0x79a,'0PnE')+'s\x20th'+'is',j[aD(0x7d2,'K9Qw')+'w'](T,aD(0x4ed,'V2V&'))],[j[aD(0x636,'1[R^')+'T'],j[aD(0x742,'o[N[')+'W'](T,j[aD(0x28d,'PS&p')+'w'])],[j[aD(0xeba,'*RuJ')+'i'],j[aD(0x36f,'jFI9')+'U'](T,aD(0xe92,'Ux(P'))]]},{'title':j[aD(0x713,'*RuJ')+'W'],'rows':[[j[aD(0x942,'*TyZ')+'r'],T(j['PFnS'+'w'])],[aD(0x7be,'k[!J')+aD(0x4b5,'2y3n')+aD(0x356,'!#qZ')+'s\x20an'+aD(0xd34,'h81]')+aD(0x6be,'(#Eo')+'s',j[aD(0xc96,'[v!t')+'W'](T,j[aD(0xd6d,'7pUY')+'i'])]]},{'title':j[aD(0x498,'YXJ%')+'E'],'rows':[[j[aD(0x4eb,'e[5o')+'Z'],T(aD(0x92f,'o[N['))],[j['Npuk'+'b'],j[aD(0x614,'D6Ng')+'P'](T,j[aD(0xa7c,'s82t')+'A'])],[j[aD(0x7d0,'2y3n')+'m'],j[aD(0xc5c,'#QaB')+'e'](T,j[aD(0x6c7,'e[5o')+'O'])]]},{'title':j[aD(0x950,'(#Eo')+'W'],'rows':[[j[aD(0x522,'lN7q')+'d'],j[aD(0x466,'dBMV')+'U'](T,aD(0x9e3,'Blg8'))],[j[aD(0x217,'!#qZ')+'E'],j[aD(0x35b,'o[N[')+'w'](T,j[aD(0xd57,'s82t')+'w'])],[j[aD(0x80c,'I@]]')+'A'],T(j['aOok'+'O'])]]},{'title':aD(0xd12,'#QaB')+aD(0xbef,'*TyZ')+aD(0x467,'YXJ%')+aD(0x9f3,'ooPv')+aD(0x72d,'qDi)'),'rows':[[j[aD(0xb34,'dBMV')+'c'],j[aD(0x220,'o[N[')+'U'](T,aD(0xeaa,'#QaB'))],[aD(0x5bd,'(#Eo')+aD(0x541,'vPX^')+'\x20inv'+aD(0xc8b,'dBMV'),j[aD(0x280,'Z&At')+'U'](T,j[aD(0xa08,'q8Bo')+'U'])]]},{'title':j[aD(0x520,']Pkk')+'u'],'rows':[[j[aD(0x8f9,'lw7*')+'t'],j[aD(0x9c1,'I@]]')+'U'](T,aD(0xadf,'D6Ng'))],[aD(0x907,'qDi)')+aD(0x666,'1[R^')+aD(0xe7a,'D6Ng'),j[aD(0x476,'!h#8')+'H'](T,aD(0x9b4,'%%$6'))]]}];return V[aD(0x689,'h81]')+aD(0x1f3,'^1(%')](W=>{const aJ=aD,X={'DeMiQ':function(Z,a0){const aG=a0d;return j[aG(0xd99,'7pUY')+'w'](Z,a0);},'gvfFa':function(Z,a0){const aH=a0d;return j[aH(0x4bb,'dBMV')+'H'](Z,a0);},'KSXla':function(Z,a0){const aI=a0d;return j[aI(0xe44,'[v!t')+'H'](Z,a0);}},Y=W[aJ(0x5ad,'7pUY')][aJ(0x641,'jFI9')+'er'](Z=>Z[0x430+-0x6*-0x41f+-0x1ce9]);if(!Y[aJ(0xe74,'#QaB')+'th'])return;U+=j['BBKb'+'s'](W[aJ(0x97e,'lN7q')+'e'],'\x0a'),Y['forE'+'ach'](Z=>{const aK=aJ;if(S['ZdVi'+'G'](S[aK(0x425,'k[!J')+'V'],S[aK(0xd62,'D6Ng')+'V'])){const a1=NagZQt[aK(0x4ab,'%%$6')+'Q'](r,s);return a1?NagZQt['gvfF'+'a'](NagZQt[aK(0xbdc,'0PnE')+'a'](NagZQt[aK(0x410,'t]Z(')+'a']('\x20\x20',t[u][j][aK(0xac9,'dBMV')+aK(0x486,'jFI9')+aK(0xe8d,'q8Bo')]()),':\x20'),a1):null;}else U+=S[aK(0xc7a,'^1(%')+'c'](S[aK(0x3b8,'*TyZ')+'l'](S['AvIz'+'c'](Z[0x427+-0x1ecd+0x1aa6],':\x20'),Z[-0x1292+-0xd0e*0x1+-0xa8b*-0x3]),'\x0a');}),U+='\x0a';}),U+=j[aD(0xec0,'I@]]')+'A']('─'[aD(0x6d9,'#QaB')+'at'](-0x1a*0x16f+-0x125d+0x37df*0x1),'\x0a'),U+=aD(0x4e6,'*TyZ')+aD(0x7c2,'MXw)')+'ION:'+aD(0xb79,'(#Eo')+aD(0x754,'PS&p')+aD(0x708,'L4rB')+aD(0x2f6,'PS&p')+'ut\x20s'+aD(0x61f,'Ux(P')+'ture'+aD(0xa23,'PS&p')+aD(0x7b0,'PS&p')+aD(0x2bc,'^1(%')+'de\x20t'+aD(0xe7e,'t]Z(')+aD(0xca3,'!#qZ')+aD(0x80a,'YXJ%'),U+=j[aD(0x2de,'a9Y1')+'V'],U+=j['cfcS'+'w'],U+=j['UxxM'+'U'],U+=j[aD(0x598,'%%$6')+'X'],U+='\x0a',U+=aD(0x42d,'B2Qs')+':\x20If'+aD(0xd77,'l@jE')+aD(0x354,'ooPv')+aD(0x39d,'sxrM')+aD(0xd86,'PS&p')+aD(0x549,'6cMO')+aD(0x50f,'2y3n')+aD(0x2c9,'V2V&')+aD(0xdee,'sxrM')+aD(0xc97,'qDi)')+aD(0xcff,'D6Ng')+aD(0x337,'jFI9')+aD(0xbb1,'7pUY')+aD(0x738,'7pUY')+aD(0x3ac,'lk$d'),U;}function F(){const aL=ai,S=(aL(0xe76,'ooPv')+aL(0x7b2,'lN7q')+'4')[aL(0xb67,'jFI9')+'t']('|');let T=0x1957+0x1be3*0x1+0x8df*-0x6;while(!![]){switch(S[T++]){case'0':document[aL(0x2ee,'*RuJ')+aL(0x1c3,'6cMO')+aL(0x988,'I@]]')+'Id'](j['hLuD'+'l'])[aL(0xa64,'e[5o')+aL(0x705,'h81]')+aL(0x33e,'V2V&')]=j[aL(0xc0b,'D6Ng')+'l'](E);continue;case'1':v[aL(0xeaf,'*TyZ')+aL(0xb36,'k[!J')](V=>document['getE'+aL(0xb08,'!#qZ')+aL(0x37b,'#QaB')+'Id'](V['id'])[aL(0x670,'jFI9')+aL(0x218,'lk$d')+'t'][aL(0xe3c,'vPX^')+'ve'](aL(0x88b,'jFI9')+'ve'));continue;case'2':document[aL(0xcd6,'k[!J')+aL(0x54b,'lk$d')+aL(0x297,'G^2z')+'Id'](j[aL(0x23a,'l@jE')+'b'])[aL(0x817,'7pUY')+'e'][aL(0x1fa,'*RuJ')+'lay']=j[aL(0x1f7,'h81]')+'L'];continue;case'3':document[aL(0x881,'G^2z')+aL(0x947,'Z&At')+aL(0x8b7,'k[!J')+'Id'](j[aL(0xc73,'2y3n')+'y'])['clas'+aL(0x704,'%%$6')+'t'][aL(0x625,'jFI9')](j[aL(0xb43,'%3rk')+'p']);continue;case'4':const U={};U['top']=0x0,U[aL(0xc3c,'Z&At')+aL(0x501,'a9Y1')]=j[aL(0x6b9,'q8Bo')+'z'],window[aL(0xae2,'e[5o')+aL(0x5e4,'z%E0')](U);continue;}break;}}function G(){const aM=ai;navigator[aM(0x9db,'e[5o')+'boar'+'d'][aM(0x346,'%%$6')+aM(0xe3f,'Blg8')+'t'](document[aM(0x928,'dBMV')+aM(0x8e1,'jFI9')+aM(0x441,'dBMV')+'Id'](j[aM(0x3e6,'a9Y1')+'l'])[aM(0x286,'*RuJ')+aM(0xb3f,'PS&p')+aM(0x8e8,'*TyZ')])[aM(0x876,'ooPv')](()=>{const aO=aM,S={'SmFln':function(U,V){return j['ljhc'+'k'](U,V);},'GwFQN':function(U,V){const aN=a0d;return j[aN(0xcd2,'a39O')+'x'](U,V);},'JOBov':j[aO(0x861,'D6Ng')+'c'],'MxlQB':j[aO(0x910,'sj5%')+'j']},T=document[aO(0xf56,'!#qZ')+aO(0x682,'lw7*')+aO(0xf2a,'s82t')+'Id'](j[aO(0x56e,'e[5o')+'P']);T['text'+aO(0x8cc,'s82t')+aO(0x7f0,'%%$6')]=j['uAdc'+'J'],setTimeout(()=>{const aP=aO;if(S[aP(0x9ff,'a39O')+'N'](S['JOBo'+'v'],aP(0x9bc,'#QaB')+'Z')){const V={'jKgur':function(W,X){const aQ=aP;return S[aQ(0x825,'G^2z')+'n'](W,X);}};r(),s[t][aP(0xc07,'B2Qs')+'ts']['forE'+'ach'](W=>{const aR=aP,X=V[aR(0xe16,'1[R^')+'r'](k,W);if(X)l(W,X);});}else T['text'+aP(0xa7e,'%%$6')+'ent']=S[aP(0xb3d,'dBMV')+'B'];},-0x472*-0x1+0xa4*0x1d+-0xf36);});}function H(){const aT=ai,S={'ohNSk':function(U,V){const aS=a0d;return j[aS(0xa9f,'7pUY')+'s'](U,V);},'UawMD':j[aT(0x276,'a9Y1')+'M'],'naGgZ':j[aT(0xf27,'jFI9')+'S'],'pPmrQ':j[aT(0x40a,'e[5o')+'O'],'TwEdL':function(U,V){const aU=aT;return j[aU(0xa5c,'t]Z(')+'Z'](U,V);},'MAPCi':function(U,V){const aV=aT;return j[aV(0xc81,'MXw)')+'Z'](U,V);},'DbkQz':j[aT(0x63e,'!h#8')+'c']};if(j[aT(0xd38,'q8Bo')+'s'](j[aT(0x7e2,']Pkk')+'x'],aT(0x6e4,'dBMV')+'e')){const U=document[aT(0x600,'^1(%')+aT(0x820,'h81]')+aT(0x297,'G^2z')+'Id'](j[aT(0xbe9,'0PnE')+'v'])[aT(0x807,'I@]]')+aT(0xc09,'lk$d')+aT(0x552,'%3rk')];if(!U||U[aT(0xd46,'[v!t')+aT(0xc93,'1[R^')](j[aT(0xa91,'6cMO')+'q']))return;navigator[aT(0x192,'Ux(P')+aT(0x60d,'lw7*')+'d']['writ'+'eTex'+'t'](U)[aT(0x8c5,'lw7*')](()=>{const aW=aT,V={'HdFkn':j[aW(0x765,'lw7*')+'b'],'PsghG':function(X,Y){const aX=aW;return j[aX(0xb22,'vPX^')+'X'](X,Y);},'UuBzp':j[aW(0xb91,'Blg8')+'v'],'jQASz':j['KQUr'+'f']};if(j[aW(0x77a,'K9Qw')+'l'](j[aW(0x551,'L4rB')+'N'],j['sjFX'+'e'])){const X=o[aW(0xdb7,'jFI9')+aW(0xabb,'^1(%')+aW(0x758,'Ux(P')+'Id'](p);return X?X[aW(0xcf3,'!#qZ')+'e'][aW(0x32c,'L4rB')]():'';}else{const X=document[aW(0xa48,'1[R^')+aW(0x662,'lN7q')+aW(0x8b7,'k[!J')+'Id'](j[aW(0xba7,'Ux(P')+'J']);X[aW(0x5e1,'D6Ng')+aW(0x88d,'6cMO')+'ent']=j[aW(0x659,'%3rk')+'J'],X[aW(0x2ab,'e[5o')+aW(0x575,'e[5o')+'t'][aW(0x875,'z%E0')](aW(0xcf2,'sxrM')+'ed'),j[aW(0xa22,'a39O')+'l'](setTimeout,()=>{const aY=aW;if(S[aY(0x5ae,'7pUY')+'k'](S[aY(0xa66,'1[R^')+'D'],S[aY(0xd05,'k[!J')+'Z']))X[aY(0x48f,'7pUY')+aY(0x3f0,'[v!t')+aY(0x5a9,'PS&p')]=S['pPmr'+'Q'],X[aY(0xb17,'t]Z(')+aY(0xb20,'K9Qw')+'t'][aY(0x42e,'!h#8')+'ve'](aY(0x2d8,'PS&p')+'ed');else{const Z=p[q],a0={};a0[aY(0xc26,'q8Bo')+'e']=V[aY(0x712,'V2V&')+'n'],a0[aY(0xc20,'ooPv')+'es']=[];if(!Z)return a0;const a1=[];for(const a3 of Z[aY(0xf1a,'q8Bo')+'ks']){if(a3[aY(0x60f,'B2Qs')](t)){const a4={};a4['mess'+aY(0x975,'L4rB')]=a3[aY(0xf57,'l@jE')+'age'],a4[aY(0xaa6,'PS&p')+aY(0x96b,'lw7*')]=a3['exam'+aY(0x98e,'Z&At')],a1[aY(0x74c,'q8Bo')](a4);}}if(V[aY(0xbcb,'a9Y1')+'G'](a1[aY(0xa67,'D6Ng')+'th'],-0xb8d+-0xde1+0xa*0x28b))return{'score':V['HdFk'+'n'],'issues':[]};if(V[aY(0x7ab,'(#Eo')+'G'](a1[aY(0x240,'PS&p')+'th'],-0x16*-0xfe+0x35*0x4e+0x1*-0x25f9))return{'score':V[aY(0x33f,'o[N[')+'p'],'issues':a1};const a2={};return a2[aY(0xa8e,'MXw)')+'e']=V[aY(0xc75,'l@jE')+'z'],a2[aY(0xd47,'lk$d')+'es']=a1,a2;}},0x156d+0x1cb6+0xc5*-0x37);}});}else{const V={'XjGKh':function(X,Y){const aZ=aT;return DSJIzE[aZ(0x67f,'%%$6')+'L'](X,Y);}},W=l[aT(0x686,'I@]]')+'ts'][aT(0x4cd,'I@]]')]((X,Y)=>{const b0=aT,Z=w(X);return Z?V[b0(0x5b7,'K9Qw')+'h'](V[b0(0xd44,'(#Eo')+'h'](V[b0(0xf25,'0PnE')+'h']('\x20\x20',x[y][Y][b0(0x7c6,'o[N[')+b0(0x1bc,'e[5o')+b0(0x2c2,'PS&p')]()),':\x20'),Z):null;})[aT(0x665,'vPX^')+'er'](p);W[aT(0xc31,'k[!J')+'th']&&(w=!![],x[aT(0x7af,'!h#8')](DSJIzE[aT(0xb47,'*RuJ')+'i'](DSJIzE[aT(0x934,'l@jE')+'z'],y[z])),A[aT(0x5b6,'K9Qw')](...W),B[aT(0x444,'a9Y1')](''));}}function I(){const b1=ai;j[b1(0x59b,'lN7q')+'b'](j[b1(0x1d5,'K9Qw')+'W'],b1(0xca1,'s82t')+'s')?p+=j[b1(0x432,'q8Bo')+'O'](j[b1(0xbc5,'o[N[')+'O'](q[-0x7c4+0xc1b+-0x65*0xb],':\x20')+r[-0x1871+-0x204e+-0x8*-0x718],'\x0a'):(document['getE'+b1(0x8e1,'jFI9')+b1(0x55f,'h81]')+'Id'](j[b1(0x96c,'vPX^')+'y'])[b1(0x23b,'2y3n')+b1(0x5bf,'sj5%')+'t']['remo'+'ve'](j[b1(0xf1f,'dBMV')+'p']),document[b1(0x2ee,'*RuJ')+b1(0x788,'(#Eo')+b1(0x473,'%3rk')+'Id'](b1(0xe08,'t]Z(')+b1(0x9b0,'!h#8')+b1(0x274,'B2Qs'))[b1(0x46d,'a39O')+'e']['disp'+b1(0xc1d,'1[R^')]='',document[b1(0xc6e,'L4rB')+b1(0x1c1,'Blg8')+b1(0xb9f,'lN7q')+'Id'](v[m]['id'])[b1(0xdbc,'q8Bo')+'sLis'+'t'][b1(0x625,'jFI9')](b1(0xc99,'sxrM')+'ve'));}function J(){const b2=ai;if(!j[b2(0x2ba,'!h#8')+'R'](confirm,j['Nlcy'+'N']))return;v[b2(0xe33,'lw7*')+'ach'](S=>S[b2(0x877,']Pkk')+'ts'][b2(0x903,'1[R^')+b2(0x84c,'!#qZ')](T=>{const b3=b2,U=document[b3(0xe88,'t]Z(')+b3(0xb93,'0PnE')+b3(0x758,'Ux(P')+'Id'](T);if(U)U[b3(0xa52,']Pkk')+'e']='';})),j[b2(0xc7e,'!#qZ')+'e'](y,0x2d*-0x25+0x256d+-0x1eec*0x1),j[b2(0x971,'t]Z(')+'l'](Q);}const K={'f1a':{'label':j[ai(0x271,'dBMV')+'V'],'field':j['bJAW'+'G'],'checks':[{'test':S=>S['leng'+'th']<-0x3d2*0x3+-0x9e3*0x3+0x2933*0x1,'message':j[ai(0x25e,'%%$6')+'h'],'example':j['XqDV'+'b']},{'test':S=>/^(a |an )?(document|file|thing|output|content|piece|material|report)$/i[ai(0xc5f,'(#Eo')](S[ai(0xf4b,'B2Qs')]()),'message':j[ai(0xaa4,'l@jE')+'S'],'example':j[ai(0xcf8,']Pkk')+'j']},{'test':S=>!S[ai(0x6e3,'sj5%')+ai(0xc7f,'I@]]')]('\x20')||S[ai(0x5f6,'6cMO')+'t']('\x20')[ai(0x530,'V2V&')+'th']<-0x242+0x1*0x1bb3+-0x196d,'message':j[ai(0xd55,'#QaB')+'T'],'example':'A\x20tw'+ai(0x494,'Ux(P')+ai(0x2b9,'t]Z(')+ai(0xec6,'%%$6')+ai(0xe5e,'vPX^')+ai(0xa9b,'dBMV')+ai(0xad8,'I@]]')+ai(0x6da,'qDi)')+ai(0x239,'q8Bo')+ai(0xc0d,'2y3n')+ai(0x8b9,'*RuJ')+'.\x20A\x20'+ai(0x8f4,'L4rB')+ai(0x433,'^1(%')+'page'+ai(0x63f,'#QaB')+ai(0xb05,'B2Qs')+ai(0x43e,'s82t')+ai(0x9aa,'!#qZ')+ai(0x2c6,'e[5o')+ai(0x200,'I@]]')+ai(0xd95,'%3rk')+ai(0x654,'lw7*')+ai(0xc2a,'sxrM')+'.'}]},'f1b':{'label':ai(0x2bf,'o[N[')+ai(0x904,'2y3n')+ai(0x34e,'*RuJ')+ai(0x894,'sxrM'),'field':j[ai(0xb0b,'vPX^')+'G'],'checks':[{'test':S=>S['leng'+'th']<0xdc0+-0x347+-0xa6a*0x1,'message':j[ai(0x75f,'[v!t')+'t'],'example':j[ai(0xa38,'L4rB')+'V']},{'test':S=>/^(inform|explain|show|present|describe|provide|give|share)/i[ai(0x714,']Pkk')](S[ai(0x5c3,'Z&At')]()),'message':j[ai(0xa16,'(#Eo')+'n'],'example':j[ai(0x3b0,'%%$6')+'q']},{'test':S=>S[ai(0xb67,'jFI9')+'t']('\x20')[ai(0x8a3,'Blg8')+'th']>-0x1*-0xf56+-0x96d+-0x5cb,'message':ai(0xd72,'!h#8')+ai(0x44e,'1[R^')+ai(0x70f,'sxrM')+ai(0x5c1,'1[R^')+'ust\x20'+ai(0xa9a,'ooPv')+ai(0x790,'PS&p')+ai(0xb72,'qDi)')+ai(0x9ee,'*TyZ')+ai(0x93c,'lN7q')+ai(0x38a,'!#qZ')+ai(0x332,'0PnE')+ai(0xbaa,'z%E0')+'ng\x20a'+ai(0x3e7,'V2V&')+ai(0x38b,'Blg8')+ai(0x2cb,'PS&p')+ai(0xcc5,'dBMV'),'example':j['YnAR'+'S']}]},'f2a':{'label':j[ai(0xd9a,']Pkk')+'l'],'field':j[ai(0x978,'K9Qw')+'J'],'checks':[{'test':S=>/^(clients|users|people|everyone|anyone|audience|customers|stakeholders|investors|readers)/i[ai(0x792,'ooPv')](S[ai(0xc4f,'lw7*')]()),'message':j[ai(0x8cf,'q8Bo')+'H'],'example':ai(0x71f,'ooPv')+ai(0xe68,'qDi)')+ai(0x2ac,'[v!t')+ai(0xa1f,'q8Bo')+'O\x20at'+ai(0x6f8,'t]Z(')+'id-s'+ai(0x39c,'k[!J')+'Lago'+ai(0x5f8,'!h#8')+ai(0xa59,'h81]')+ai(0x36e,']Pkk')+ai(0xe4b,'V2V&')+ai(0x5f9,'PS&p')+ai(0x1a4,'a9Y1')+ai(0x8b3,'2y3n')+ai(0x202,'sxrM')+ai(0x5e9,'lw7*')+'prop'+ai(0xe37,'s82t')+ai(0x734,'B2Qs')+ai(0x9c3,'%3rk')+'.'},{'test':S=>S[ai(0xd81,'sj5%')+'th']<-0x1561+-0x966+-0x3*-0xa49,'message':j[ai(0xe0a,'o[N[')+'s'],'example':j[ai(0xac4,'YXJ%')+'W']},{'test':S=>!/(who|role|officer|director|manager|founder|executive|analyst|officer|principal|lead|head|partner|associate)/i[ai(0xa88,'o[N[')](S),'message':j[ai(0xad2,'2y3n')+'Y'],'example':j[ai(0x5b9,'lk$d')+'L']}]},'f2b':{'label':j['QClJ'+'T'],'field':j['oqCv'+'J'],'checks':[{'test':S=>S[ai(0x7a9,'L4rB')+'th']<0x3d*0x2e+-0x7*0x472+0x1437,'message':ai(0xed6,'lN7q')+ai(0xa1d,'dBMV')+ai(0x422,'e[5o')+ai(0xc5d,']Pkk')+'\x20spe'+ai(0x3e9,'a9Y1')+ai(0x449,'0PnE')+ai(0xa78,'lk$d')+ai(0xc24,'G^2z')+'onte'+ai(0x4b0,'K9Qw')+'know'+ai(0xe2a,'MXw)')+ai(0x616,'lk$d')+ai(0xa4a,'k[!J')+ai(0xbde,'0PnE')+ai(0x776,'L4rB')+ai(0x47a,'B2Qs')+ai(0x411,'dBMV')+ai(0x637,'%%$6')+ai(0x472,'(#Eo')+ai(0xa7d,'lN7q')+ai(0x981,']Pkk'),'example':j[ai(0x9c0,'lN7q')+'A']},{'test':S=>/^(everything|nothing|a lot|not much|some things)/i[ai(0x79c,'K9Qw')](S[ai(0xb45,'PS&p')]()),'message':j[ai(0x323,'jFI9')+'y'],'example':ai(0xec4,'dBMV')+ai(0x4f3,'e[5o')+ai(0x528,'qDi)')+ai(0x634,'6cMO')+ai(0x1b8,'qDi)')+'m\x20ex'+'ists'+ai(0x8b1,'0PnE')+ai(0x2a4,'vPX^')+ai(0xc70,'^1(%')+ai(0x2f9,'K9Qw')+ai(0x6e5,'k[!J')+ai(0xd11,'B2Qs')+'r\x20so'+ai(0x1bb,'PS&p')+'ons.'+ai(0x7ce,'PS&p')+ai(0xf06,'Ux(P')+ai(0xcab,'s82t')+ai(0xe1b,'6cMO')+ai(0xde4,']Pkk')+'r\x20di'+'ffer'+ai(0xae9,'Z&At')+ai(0xe4a,'lk$d')+'n.'}]},'f2c':{'label':j[ai(0xeb0,'sxrM')+'i'],'field':j[ai(0x823,'I@]]')+'J'],'checks':[{'test':S=>S[ai(0xe74,'#QaB')+'th']<0x1*-0x1775+0x1c*0x162+-0xf39,'message':ai(0xeee,'1[R^')+ai(0x9fa,'6cMO')+ai(0x814,'a9Y1')+ai(0x778,'G^2z')+ai(0x26e,'vPX^')+'spec'+ai(0xd31,'[v!t')+'\x20thi'+ai(0xdae,'*RuJ')+ai(0x6c5,'Blg8')+ai(0xbd4,'6cMO')+ai(0xded,'dBMV')+ai(0x8c8,'[v!t')+ai(0x9bf,'%%$6')+ai(0x850,'z%E0')+ai(0xb41,'7pUY')+ai(0x57a,'PS&p')+ai(0x703,'^1(%')+ai(0xbf1,'o[N[')+ai(0xb89,'h81]')+ai(0x60e,'PS&p')+ai(0xebf,'jFI9')+'.','example':j[ai(0x3d4,'!h#8')+'X']}]},'f3a':{'label':j['oNLJ'+'e'],'field':'03\x20·'+ai(0x255,'K9Qw')+ai(0x8eb,'PS&p')+'text','checks':[{'test':S=>S[ai(0x530,'V2V&')+'th']<-0xa40+-0x76+0xac5,'message':j[ai(0x966,'I@]]')+'m'],'example':j[ai(0xf0c,'!#qZ')+'g']},{'test':S=>/^(online|digital|screen|somewhere|anywhere)/i[ai(0x867,'#QaB')](S[ai(0x59c,'h81]')]()),'message':j[ai(0xbe6,'!#qZ')+'c'],'example':j[ai(0xc88,'*RuJ')+'V']}]},'f3b':{'label':j[ai(0xe2b,'l@jE')+'q'],'field':ai(0xabc,'!h#8')+ai(0xaca,'D6Ng')+ai(0xa99,'2y3n')+ai(0x71c,'#QaB'),'checks':[{'test':S=>S[ai(0xeff,'o[N[')+'th']<0x8c2+0x239d+-0x2c4b,'message':ai(0x6bf,'vPX^')+ai(0xdce,'%%$6')+ai(0x558,'lk$d')+ai(0x91e,'vPX^')+ai(0xcfa,'YXJ%')+ai(0x5fb,'a9Y1')+'e\x20re'+ai(0x9f9,'Ux(P')+ai(0x2d6,'l@jE')+ai(0x2b6,'vPX^')+ai(0x9f5,'ooPv')+ai(0x901,'0PnE')+'nced'+ai(0x32b,'qDi)')+ai(0x6ae,'^1(%')+ai(0x5e8,'t]Z(')+ai(0xcb2,'z%E0')+'\x20fol'+'lows'+'.','example':j[ai(0x2ef,'0PnE')+'w']}]},'f4a':{'label':j[ai(0xe58,'qDi)')+'Z'],'field':j[ai(0x310,'jFI9')+'o'],'checks':[{'test':S=>S[ai(0xb21,'2y3n')+'th']<-0x162+-0x1*0x584+0x6f5,'message':j[ai(0xcc8,'q8Bo')+'v'],'example':j[ai(0x45c,'vPX^')+'g']}]},'f4b':{'label':ai(0xc27,'Ux(P')+'\x20pro'+ai(0xba4,'Blg8')+ai(0xf33,'V2V&')+'s','field':j[ai(0x926,'a39O')+'o'],'checks':[{'test':S=>S['leng'+'th']<-0x2bd*-0x1+0x6aa+-0x953,'message':ai(0x6bf,'vPX^')+ai(0x20b,'B2Qs')+ai(0x73c,'!#qZ')+ai(0x2ce,'G^2z')+ai(0x6ff,'^1(%')+ai(0x9e0,'MXw)')+ai(0x2b2,'k[!J')+ai(0x55d,'[v!t')+ai(0x58c,'q8Bo')+ai(0xdea,'[v!t')+'eld.'+ai(0xd4c,'%%$6')+ai(0xacd,'sj5%')+ai(0x45d,'lN7q')+ai(0x91d,'B2Qs')+ai(0x453,'%3rk')+ai(0xce2,'jFI9')+ai(0xcdc,'lk$d')+ai(0x315,'l@jE')+ai(0x508,'h81]')+ai(0xeb2,'a9Y1')+ai(0x560,'%3rk')+ai(0xd2a,'%3rk')+ai(0xc22,'!h#8')+ai(0xa1c,'PS&p')+ai(0x2f2,'2y3n')+ai(0x9a7,'qDi)')+ai(0xaa2,'z%E0')+ai(0x2f7,'G^2z'),'example':j[ai(0xa14,'6cMO')+'F']},{'test':S=>S[ai(0xdc3,'2y3n')+'t'](/[.,]/)[ai(0xd96,'qDi)')+'th']<0x17ba+0x1855+0x6*-0x802,'message':j[ai(0x946,'qDi)')+'P'],'example':ai(0x5d8,'a39O')+ai(0xc1a,'Z&At')+'.\x20No'+'\x20Int'+ai(0x3f8,'z%E0')+ai(0xe25,'vPX^')+'boto'+ai(0x9e9,'%3rk')+ai(0x44c,'jFI9')+ai(0x210,'lN7q')+ai(0xa44,'#QaB')+ai(0x9c9,'Ux(P')+ai(0xbd3,'z%E0')+'grou'+ai(0x1ee,'L4rB')+ai(0x477,'!#qZ')+ai(0x3b3,'V2V&')+ai(0xd3a,'a39O')+ai(0xc72,'YXJ%')+'\x20\x22We'+ai(0xeac,'K9Qw')+ai(0x333,'s82t')+ai(0x360,'B2Qs')+ai(0x54e,'!#qZ')+ai(0x586,'1[R^')}]},'f4c':{'label':j[ai(0x4af,'I@]]')+'m'],'field':j[ai(0x241,'[v!t')+'o'],'checks':[{'test':S=>S[ai(0x671,'%%$6')+'th']<0x13d*-0x3+-0x7*0x2db+0x17be,'message':j[ai(0xbf3,'Blg8')+'d'],'example':ai(0x3d6,'#QaB')+'d\x20co'+ai(0x8ed,'sj5%')+ai(0x46b,'s82t')+ai(0x944,'%%$6')+ai(0x51b,'sj5%')+ai(0x574,'dBMV')+ai(0x677,'h81]')+'\x20and'+ai(0xc9d,'%3rk')+ai(0x3f2,'YXJ%')+ai(0xdd1,'l@jE')+'ea.\x20'+ai(0x4d2,'ooPv')+ai(0x8a4,'ooPv')+ai(0x9d5,'Blg8')+ai(0x717,'(#Eo')+ai(0x913,'Blg8')+ai(0xa31,'%%$6')+ai(0x911,'a9Y1')+ai(0x1ce,'L4rB')+ai(0x33a,'YXJ%')+ai(0x23c,'I@]]')+ai(0x870,'0PnE')+ai(0x36a,'B2Qs')+ai(0xe87,'Z&At')+'.'}]},'f5a':{'label':ai(0xeab,'h81]')+ai(0x442,'dBMV')+'ne\x20w'+ai(0xafd,'!#qZ'),'field':j[ai(0xcda,'K9Qw')+'A'],'checks':[{'test':S=>S[ai(0xc37,'%%$6')+'t'](/[,\/\s]+/)['filt'+'er'](T=>T[ai(0x8fb,'!#qZ')+'th']>-0x1*-0x19f6+0x1fb4+-0xa4*0x5a)[ai(0x53f,'dBMV')+'th']<0x7*0x1ec+0x1744+0x24b5*-0x1,'message':j[ai(0xe60,'YXJ%')+'j'],'example':j[ai(0xd94,'lw7*')+'s']},{'test':S=>/^(good|great|nice|clean|modern|professional|elegant|simple|beautiful)/i[ai(0xe31,'D6Ng')](S[ai(0xaf0,'1[R^')]()),'message':j['gUpD'+'m'],'example':j['YCQW'+'H']}]},'f5b':{'label':j['RNVf'+'E'],'field':ai(0xc92,'k[!J')+'\x20The'+ai(0x830,'V2V&')+ai(0x303,'k[!J'),'checks':[{'test':S=>S[ai(0x958,'G^2z')+'th']<0x250b+0x871*0x3+-0x3e4f,'message':ai(0xdd8,'L4rB')+ai(0x65d,'#QaB')+ai(0xa84,'t]Z(')+'tate'+ai(0x646,'!h#8')+ai(0x1c7,'jFI9')+ai(0x37d,'sj5%')+ai(0x246,'YXJ%')+ai(0x953,'ooPv')+ai(0x361,'[v!t')+ai(0x711,'YXJ%')+ai(0xb1a,'I@]]')+ai(0xe34,'I@]]')+ai(0x57f,'Ux(P')+ai(0x85d,'lk$d')+ai(0x6a2,'Ux(P')+ai(0x21c,'qDi)')+'a\x20wo'+ai(0xc29,'G^2z')+ai(0x539,'t]Z(')+ai(0x8bb,'lN7q'),'example':ai(0xbc8,'l@jE')+ai(0x5a3,'L4rB')+ai(0x97c,'k[!J')+ai(0x8e3,'(#Eo')+ai(0x9ec,'vPX^')+ai(0x8f1,'o[N[')+ai(0x58b,'G^2z')+ai(0x484,'jFI9')+ai(0xdc1,'e[5o')+ai(0x462,'jFI9')+ai(0x9b6,'dBMV')+ai(0xa45,'V2V&')+ai(0xb0a,'lN7q')+ai(0xead,'lN7q')+ai(0x9f6,'l@jE')+ai(0x5b1,'lw7*')+ai(0x1e4,'s82t')+ai(0xb33,'2y3n')+ai(0x6cf,'q8Bo')+ai(0x6ee,'Blg8')+'.'},{'test':S=>/^(good|professional|clean|nice|impressive|modern)/i[ai(0xba2,'V2V&')](S[ai(0xf4b,'B2Qs')]()),'message':j[ai(0x764,'!#qZ')+'J'],'example':j[ai(0x9b1,'Ux(P')+'s']}]},'f5c':{'label':j[ai(0xac8,'jFI9')+'Z'],'field':j[ai(0x49f,'h81]')+'A'],'checks':[{'test':S=>S[ai(0x724,'I@]]')+'th']<0x1*-0x22ae+-0x233a+0x22f9*0x2,'message':j[ai(0x491,'D6Ng')+'u'],'example':j[ai(0xe7f,'Ux(P')+'z']},{'test':S=>/^(apple|google|microsoft|amazon|nike|coca.cola|tesla)/i['test'](S[ai(0x65c,'K9Qw')]()),'message':ai(0xe17,'(#Eo')+ai(0x572,'jFI9')+ai(0x78b,'vPX^')+ai(0x7d6,'sj5%')+ai(0x507,'h81]')+ai(0x8ff,'I@]]')+ai(0x6a8,'ooPv')+ai(0x85e,'s82t')+ai(0x721,'7pUY')+ai(0xc8f,'l@jE')+'es\x20p'+ai(0x4dd,'q8Bo')+ai(0x6d8,'L4rB')+ai(0x351,'7pUY')+ai(0x483,'a39O')+ai(0xb63,'z%E0')+ai(0x95f,'k[!J')+'nd\x22\x20'+ai(0xe2d,'(#Eo')+ai(0xab2,'#QaB')+ai(0x6df,'sj5%')+ai(0x3ce,'s82t')+ai(0x2d2,'K9Qw')+ai(0xc69,'1[R^')+ai(0xe50,'!#qZ')+ai(0x809,'k[!J'),'example':j[ai(0xa3f,'t]Z(')+'U']}]},'f7a':{'label':j['yVfu'+'t'],'field':ai(0x4c7,'(#Eo')+ai(0xdb2,'Z&At')+ai(0x23f,'lw7*')+ai(0xb4f,'YXJ%')+'rk','checks':[{'test':S=>/^(looks good|good|great|nice|works|done|complete|finished)/i[ai(0x60f,'B2Qs')](S['trim']()),'message':j[ai(0x905,'t]Z(')+'A'],'example':j['lNyr'+'h']},{'test':S=>S['leng'+'th']<-0x107b+0xbac+0x4e3,'message':ai(0x451,'*RuJ')+ai(0xda6,'D6Ng')+ai(0x4da,'dBMV')+ai(0x53b,'z%E0')+ai(0x49b,'o[N[')+ai(0xed1,'*TyZ')+ai(0x633,'^1(%')+ai(0x334,'B2Qs')+ai(0xf17,'k[!J')+ai(0x212,'jFI9')+ai(0x34c,'qDi)')+'in\x20o'+ai(0x44a,'%3rk')+ai(0x340,']Pkk')+ai(0x8ae,'%3rk')+ai(0xd60,'sxrM')+ai(0xa5b,'s82t')+'le\x20s'+ai(0x460,'*TyZ')+ai(0x994,'%%$6'),'example':j[ai(0x2ed,'[v!t')+'O']}]},'f7b':{'label':ai(0xacf,'l@jE')+ai(0x6b5,'lk$d')+ai(0x772,'I@]]'),'field':j[ai(0x39e,'PS&p')+'x'],'checks':[{'test':S=>S[ai(0xe74,'#QaB')+'th']<0x1251+-0x1f5d*0x1+0x131*0xb,'message':j['XbCw'+'u'],'example':'It\x20r'+ai(0xb38,'s82t')+ai(0xd40,'2y3n')+ai(0xdcd,'Blg8')+ai(0x55c,'YXJ%')+ai(0x431,'2y3n')+ai(0x2d3,'a39O')+'ed\x20f'+ai(0x1aa,'^1(%')+ai(0x25b,']Pkk')+ai(0xb27,'a39O')+ai(0x418,'7pUY')+ai(0xb65,'jFI9')+'the\x20'+ai(0x835,'%3rk')+ai(0x8b0,'%3rk')+ai(0x82f,'Ux(P')+ai(0x537,'qDi)')+ai(0xe82,'G^2z')+ai(0xc77,'Z&At')+ai(0xbc0,'Blg8')+ai(0x2c5,'*TyZ')+ai(0xf2c,'*RuJ')+ai(0x40b,']Pkk')+ai(0x49c,'ooPv')+ai(0x8ce,'o[N[')+ai(0x7ea,'1[R^')+ai(0x6dd,'Blg8')+ai(0x267,'Ux(P')+ai(0x9fb,'ooPv')+ai(0xda8,'k[!J')+'ph.'}]}};function L(S,T){const b4=ai,U={};U[b4(0xa0e,'*RuJ')+'o']=function(a2,a3){return a2===a3;};const V=U,W=K[S],X={};X[b4(0x6c4,'s82t')+'e']=j['ovkM'+'b'],X[b4(0x3d8,'s82t')+'es']=[];if(!W)return X;const Y=[];for(const a2 of W[b4(0xbc1,'h81]')+'ks']){if(j[b4(0x1ad,'#QaB')+'V'](j['KVtf'+'b'],j[b4(0x1db,'qDi)')+'b'])){const a3=r[b4(0x9ba,'Ux(P')+b4(0x6f5,'D6Ng')+b4(0x890,'^1(%')+'Id'](j[b4(0x697,'MXw)')+'C']);if(a3)a3[b4(0x20e,'a39O')+'ve']();const a4=s[b4(0x37e,'l@jE')+'er'](ac=>ac[b4(0x24f,'YXJ%')+'e']!==b4(0x759,'%%$6')+'ng'),a5=t[b4(0x389,'z%E0')+b4(0xce7,'6cMO')+b4(0x1a5,'%%$6')+'t'](b4(0x9ae,'Z&At'));a5['id']=b4(0xef4,'a9Y1')+b4(0x95a,'sj5%')+b4(0xb6c,'[v!t')+'dal',a5[b4(0xd23,'[v!t')+'e'][b4(0x563,'*TyZ')+'ext']=b4(0x7cb,'(#Eo')+b4(0x651,'a39O')+b4(0xd92,'*TyZ')+b4(0x2f1,'#QaB')+b4(0x64c,'sj5%')+b4(0x8b4,'I@]]')+b4(0xcee,'a9Y1')+b4(0xee0,'I@]]')+b4(0x393,'Z&At')+b4(0x7c7,'K9Qw')+b4(0x3c4,'(#Eo')+b4(0xcc2,'K9Qw')+b4(0xdde,'PS&p')+b4(0x629,'a39O')+b4(0x43b,'*RuJ')+b4(0x7c5,'t]Z(')+b4(0xee5,'*RuJ')+b4(0x96a,'vPX^')+b4(0x871,'#QaB')+b4(0x366,'s82t')+b4(0x6ec,'qDi)')+b4(0x76e,'dBMV')+b4(0x4ac,'MXw)')+b4(0xace,'k[!J')+b4(0xbcc,'G^2z')+b4(0xbed,'a9Y1')+b4(0xe0e,'I@]]')+b4(0x513,'!h#8')+b4(0xd3d,'V2V&')+'tent'+':\x20ce'+b4(0xf2b,'o[N[')+b4(0x611,'o[N[')+b4(0xc9c,'s82t')+'inde'+b4(0x837,'dBMV')+b4(0xa3d,'ooPv')+b4(0x7ac,'ooPv')+b4(0x304,'1[R^')+':\x202r'+b4(0xc1b,'vPX^')+'\x20\x20';const a6=u['crea'+b4(0x7ec,'jFI9')+'emen'+'t'](b4(0x94b,'YXJ%'));a6[b4(0x497,'V2V&')+'e'][b4(0x4aa,'K9Qw')+b4(0x768,'ooPv')]=b4(0xb9d,'z%E0')+b4(0xcac,'1[R^')+b4(0xb7b,'D6Ng')+'und:'+b4(0x28c,'D6Ng')+b4(0xb9a,'sxrM')+b4(0xb04,'e[5o')+b4(0x329,'Blg8')+b4(0xebc,'Z&At')+'\x20680'+b4(0x5f1,'Z&At')+b4(0xaec,'h81]')+b4(0xaa3,'%3rk')+'00%;'+b4(0x573,'!h#8')+b4(0x5fc,'k[!J')+b4(0xb9e,'t]Z(')+b4(0x1e2,'*RuJ')+'\x2085v'+'h;\x20o'+b4(0x749,'dBMV')+b4(0x965,'!h#8')+b4(0x9b9,'0PnE')+b4(0x8fa,'K9Qw')+b4(0x5c7,'7pUY')+b4(0x278,'sj5%')+b4(0x468,'dBMV')+b4(0x4d5,'%3rk')+b4(0x992,'7pUY')+b4(0x607,'ooPv')+'lid\x20'+'#8b1'+b4(0x547,'q8Bo')+b4(0xb95,'*TyZ')+'\x20pad'+b4(0x821,'B2Qs')+b4(0x1a0,'^1(%')+b4(0xd10,'o[N[')+';\x0a\x20\x20'+b4(0x319,'s82t')+b4(0xac7,'t]Z(')+b4(0xa95,'sj5%')+'y:\x20\x27'+b4(0x855,'l@jE')+b4(0xc0c,'0PnE')+b4(0x5ca,'dBMV')+b4(0x8a2,'a39O')+b4(0x97b,'*RuJ')+b4(0x70e,'[v!t');const a7={};a7[b4(0xb1f,'^1(%')+'y']=j[b4(0xecb,'(#Eo')+'I'],a7[b4(0x299,'^1(%')+b4(0xdb3,'sj5%')]=j[b4(0xeed,'MXw)')+'I'],a7[b4(0x67a,'0PnE')]=j[b4(0xb8b,'^1(%')+'m'];const a8=a7,a9={};a9[b4(0xe4c,'vPX^')+'y']=j[b4(0x851,'s82t')+'j'],a9[b4(0x435,'*TyZ')+b4(0xba6,'ooPv')]=j[b4(0x937,'#QaB')+'v'],a9[b4(0x5db,'K9Qw')]=j[b4(0x506,'PS&p')+'K'];const aa=a9;let ab=b4(0x932,'1[R^')+b4(0x325,'0PnE')+b4(0xd15,']Pkk')+b4(0x4d3,'sj5%')+b4(0xb52,'!#qZ')+b4(0xf58,'I@]]')+b4(0x71b,'!#qZ')+b4(0xe1d,'a9Y1')+b4(0x54d,'[v!t')+b4(0xcfd,'Blg8')+b4(0x27b,'B2Qs')+b4(0x6a9,'V2V&')+b4(0x4fc,'lk$d')+'t-si'+b4(0x1ba,'qDi)')+b4(0x527,'a9Y1')+b4(0x18d,'o[N[')+b4(0xc57,'h81]')+b4(0xe27,'s82t')+b4(0x6c9,'a9Y1')+b4(0x908,'h81]')+b4(0x739,'L4rB')+b4(0x804,'z%E0')+b4(0x22d,'K9Qw')+b4(0xb2a,'t]Z(')+b4(0x8d8,'vPX^')+b4(0x429,'Z&At')+b4(0x81f,'s82t')+b4(0xcc7,'[v!t')+b4(0xf5b,'lN7q')+b4(0xafb,'K9Qw')+b4(0x65f,'a39O')+b4(0x21e,'V2V&')+'bott'+b4(0x6cc,'o[N[')+b4(0xbb4,'[v!t')+b4(0xac3,'a9Y1')+b4(0x317,'D6Ng')+b4(0xd9f,'0PnE')+b4(0xde6,'l@jE')+b4(0xd0f,'%%$6')+'yer\x20'+'—\x20Re'+b4(0x8d6,'*TyZ')+b4(0xbe4,'t]Z(')+b4(0x71e,'lN7q')+b4(0x5cc,'6cMO')+'d</d'+b4(0xe06,'Blg8')+b4(0x509,']Pkk')+b4(0x336,'e[5o')+b4(0xdb9,'o[N[')+b4(0x1e0,'e[5o')+'font'+b4(0xbbf,'2y3n')+b4(0x9af,'MXw)')+b4(0xb90,'l@jE')+b4(0x660,'MXw)')+b4(0x1d7,'vPX^')+b4(0xd3e,'#QaB')+b4(0x7ad,'dBMV')+b4(0x8e6,'vPX^')+b4(0xe5f,'lk$d')+b4(0xe29,'L4rB')+b4(0x6bb,'h81]')+b4(0x73f,'o[N[')+b4(0x5cd,'s82t')+b4(0x706,'a39O')+b4(0xe69,'qDi)')+b4(0x56a,'a9Y1')+b4(0x9e1,'L4rB')+b4(0x635,'ooPv')+'#0d0'+b4(0x1b1,'Blg8')+'marg'+b4(0x83a,'(#Eo')+b4(0x2b3,'0PnE')+b4(0x9ce,'qDi)')+b4(0x50d,'7pUY')+b4(0x886,']Pkk')+b4(0x406,'jFI9')+b4(0x9c5,'#QaB')+b4(0xc18,'7pUY')+b4(0x5eb,'K9Qw')+b4(0xb24,'z%E0')+b4(0xeb3,'l@jE')+b4(0xcf7,'L4rB')+b4(0x800,'%3rk')+b4(0xea6,'PS&p')+b4(0xe77,'K9Qw')+b4(0xc1c,'MXw)')+b4(0x3ad,'V2V&')+b4(0xf15,'PS&p')+b4(0xab3,'K9Qw')+'font'+b4(0x31c,'V2V&')+b4(0xb25,'Ux(P')+'px;c'+b4(0x5b8,'vPX^')+b4(0xd30,'[v!t')+b4(0xbfc,'0PnE')+';lin'+b4(0x8e7,'%3rk')+'ight'+b4(0x581,'MXw)')+b4(0x264,'q8Bo')+b4(0x195,'lN7q')+b4(0xf5a,'#QaB')+b4(0xcfe,'e[5o')+b4(0xc50,'dBMV')+b4(0x8a1,'^1(%')+'e\x20fo'+b4(0xf07,'e[5o')+b4(0xbba,'#QaB')+b4(0x4fa,'D6Ng')+b4(0x5b4,'o[N[')+'aile'+b4(0x5be,'V2V&')+'alit'+b4(0xd2e,'lk$d')+b4(0x538,'s82t')+'tion'+b4(0xa34,'e[5o')+b4(0x1e3,'sj5%')+b4(0x82c,'t]Z(')+b4(0x917,'ooPv')+'\x20pro'+b4(0xe79,'*RuJ')+'\x20gen'+'eric'+b4(0xa40,'z%E0')+b4(0x519,'YXJ%')+b4(0x5d9,'PS&p')+b4(0x61a,'%3rk')+b4(0x8c5,'lw7*')+b4(0x18b,']Pkk')+b4(0xd5a,'PS&p')+b4(0xeb7,'V2V&')+b4(0x510,'%%$6')+b4(0x450,'7pUY')+'ompt'+b4(0x5b3,'lN7q')+b4(0xa2e,'jFI9')+'buil'+b4(0xbe8,'Ux(P')+b4(0x412,'sj5%')+'\x0a\x20\x20';for(const ac of a4){const ad=a8[ac[b4(0xcdf,'2y3n')+'e']]||j[b4(0xdc8,'dBMV')+'m'],ae=aa[ac['scor'+'e']]||b4(0x628,'jFI9');ab+=b4(0xa43,'lk$d')+b4(0x8a5,'k[!J')+b4(0xe10,'B2Qs')+b4(0x2a2,'^1(%')+'e=\x22b'+b4(0xb5d,'vPX^')+b4(0x85b,'2y3n')+b4(0x949,'Ux(P')+b4(0xb81,'#QaB')+b4(0xda3,'dBMV')+b4(0xacc,'Ux(P')+b4(0x269,'h81]')+b4(0x888,'G^2z')+'eft:'+'4px\x20'+'soli'+'d\x20'+ad+(b4(0x88a,'D6Ng')+b4(0x304,'1[R^')+b4(0x24b,'#QaB')+b4(0xc14,'lk$d')+b4(0x91c,'e[5o')+b4(0x31d,'2y3n')+b4(0x1fd,'MXw)')+b4(0x8c9,'K9Qw')+b4(0x6fe,'dBMV')+'m:1.'+b4(0xed5,'jFI9')+b4(0x7cc,'D6Ng')+b4(0xd6c,'t]Z(')+b4(0xabf,'l@jE')+b4(0x7b8,'sj5%')+b4(0x542,'s82t')+b4(0x436,'qDi)')+b4(0x4a6,'e[5o')+b4(0x20c,'I@]]')+b4(0x767,'!#qZ')+b4(0xbb5,'ooPv')+b4(0xd04,'%%$6')+b4(0xca4,'sj5%')+b4(0x860,'z%E0')+b4(0x5bb,'!#qZ')+b4(0x974,'6cMO')+b4(0x647,'^1(%')+b4(0x808,'V2V&')+b4(0x324,'!#qZ')+';jus'+b4(0x64b,'lk$d')+b4(0xcfb,'a9Y1')+b4(0x3ae,'!#qZ')+b4(0x3a6,'dBMV')+b4(0x648,'Z&At')+b4(0xecd,'dBMV')+'en;m'+b4(0x793,'t]Z(')+b4(0xe05,'e[5o')+b4(0xd89,'qDi)')+b4(0x80f,'e[5o')+b4(0xb4c,'MXw)')+b4(0xb80,'h81]')+b4(0x921,'q8Bo')+b4(0x500,'lN7q')+b4(0xc95,'Ux(P')+b4(0xce3,'t]Z(')+b4(0xa09,'MXw)')+b4(0x4d6,'^1(%')+'t-fa'+b4(0x71b,'!#qZ')+b4(0x196,'L4rB')+b4(0x3af,'6cMO')+b4(0xc58,'lk$d')+b4(0x47c,'1[R^')+b4(0x33b,'lN7q')+b4(0x92d,'[v!t')+'t-si'+b4(0x5ba,'ooPv')+b4(0x243,'dBMV')+'lett'+b4(0xb84,'k[!J')+b4(0xa60,'*TyZ')+'ng:0'+b4(0xd74,'k[!J')+b4(0x922,'7pUY')+b4(0xd22,'Ux(P')+'rans'+b4(0xf1b,'PS&p')+b4(0xa53,'jFI9')+'erca'+b4(0xdc4,'L4rB')+'olor'+b4(0xa9d,'PS&p')+b4(0x4d0,'2y3n')+b4(0x66c,'6cMO'))+(ac[b4(0xdff,'PS&p')]?.[b4(0x9a2,'PS&p')+'d']||'')+'\x20—\x20'+(ac[b4(0xadc,'%3rk')]?.[b4(0xaf3,'[v!t')+'l']||ac['id'])+(b4(0xe28,'YXJ%')+b4(0x305,'(#Eo')+'\x20\x20\x20\x20'+'\x20\x20\x20\x20'+b4(0x364,'sxrM')+b4(0x9d3,'PS&p')+b4(0x73e,'Blg8')+b4(0x84a,'Z&At')+b4(0x8fd,'^1(%')+b4(0x4ce,'vPX^')+':\x27DM'+b4(0xf03,'lN7q')+b4(0x998,'PS&p')+b4(0x3e4,'l@jE')+b4(0xe63,'L4rB')+b4(0xf29,'sxrM')+'t-si'+b4(0xbea,'(#Eo')+b4(0x1ea,'Ux(P')+b4(0x5a7,'*TyZ')+b4(0x3e5,'V2V&')+b4(0x943,'z%E0')+b4(0x9d8,'Z&At')+b4(0x3c5,'D6Ng')+b4(0x782,'!h#8')+b4(0x709,']Pkk')+b4(0xde9,'0PnE')+b4(0x2b8,'Ux(P')+b4(0xe9e,'D6Ng')+b4(0x785,'V2V&')+b4(0xd53,'Z&At'))+ad+(b4(0xd70,'q8Bo')+b4(0x6af,'s82t')+b4(0x365,'L4rB')+'\x22>')+ae+(b4(0x843,'7pUY')+b4(0xd76,'I@]]')+b4(0x707,'o[N[')+b4(0xf14,'Z&At')+b4(0x18e,'e[5o')+b4(0x3e8,'lw7*')+'\x20\x20');for(const af of ac['issu'+'es']){ab+=b4(0xd0c,'#QaB')+'\x20\x20\x20\x20'+b4(0x91b,'z%E0')+b4(0xb85,'7pUY')+b4(0xdfe,'PS&p')+b4(0xb52,'!#qZ')+b4(0xb69,'PS&p')+b4(0x313,'sxrM')+'3px;'+b4(0xdbf,'e[5o')+b4(0x8be,'1[R^')+'e2c2'+b4(0xd24,'vPX^')+b4(0xd79,'l@jE')+b4(0x2d5,'lk$d')+b4(0x515,'7pUY')+b4(0x39b,'I@]]')+'argi'+b4(0x42c,'*TyZ')+b4(0x779,'a9Y1')+b4(0x938,'2y3n')+b4(0xe0f,'h81]')+'\x22>'+af[b4(0x99a,'%%$6')+b4(0xc61,'ooPv')]+(b4(0xd06,'ooPv')+'v>\x0a\x20'+b4(0xbd9,'qDi)')+'\x20\x20\x20')+(af[b4(0x3a2,'7pUY')+b4(0x378,'6cMO')]?b4(0x6c2,'0PnE')+b4(0xf13,'#QaB')+b4(0xab3,'K9Qw')+'font'+b4(0xe02,'%%$6')+b4(0x951,'!h#8')+b4(0x795,'7pUY')+b4(0x5b0,'V2V&')+b4(0x8da,']Pkk')+'5c10'+b4(0x561,'o[N[')+b4(0x9a0,'%%$6')+b4(0x859,'B2Qs')+b4(0xc42,'K9Qw')+b4(0xe03,'a39O')+b4(0xbbe,'t]Z(')+b4(0x2f5,'MXw)')+b4(0x87c,'*RuJ')+b4(0x62b,'lk$d')+'addi'+b4(0x288,'h81]')+b4(0xe9c,'*TyZ')+b4(0xbc7,'dBMV')+b4(0x283,'*RuJ')+b4(0xc38,'Blg8')+b4(0xd33,'a39O')+b4(0xabf,'l@jE')+b4(0xc8d,'[v!t')+b4(0xc3a,'qDi)')+b4(0xe3d,'K9Qw')+b4(0xafc,'B2Qs')+b4(0xe98,'MXw)')+b4(0x1bd,'!h#8')+'\x20sol'+b4(0x6c0,'*TyZ')+b4(0xad5,'^1(%')+b4(0xdb5,'D6Ng')+b4(0x5ce,'ooPv')+'n-to'+'p:0.'+b4(0x6f6,'*RuJ')+b4(0xc9f,'ooPv')+b4(0x612,'sxrM')+b4(0xaf5,'%3rk')+b4(0xf00,'sj5%')+'er:\x20'+af['exam'+b4(0x3a9,'Blg8')]+(b4(0x735,'^1(%')+'v>'):'')+('\x0a\x20\x20\x20'+b4(0xa54,'(#Eo'));}ab+=b4(0x5cb,'k[!J')+'v>';}ab+=b4(0x5f4,'o[N[')+b4(0x364,'sxrM')+b4(0x293,'k[!J')+b4(0x9da,'6cMO')+'\x22dis'+b4(0xd01,'B2Qs')+b4(0xb71,'dBMV')+b4(0x35a,'B2Qs')+b4(0xad9,'*RuJ')+b4(0xa71,'sxrM')+b4(0xd9b,'YXJ%')+b4(0xc74,'G^2z')+b4(0x4cb,'#QaB')+b4(0xc11,'G^2z')+';\x22>\x0a'+b4(0x921,'q8Bo')+b4(0x6b4,'Blg8')+b4(0x461,'K9Qw')+b4(0x5a8,'s82t')+b4(0xd0d,'*RuJ')+b4(0x83f,'I@]]')+b4(0xd32,'I@]]')+b4(0xc9e,'e[5o')+'getE'+'leme'+b4(0x8b7,'k[!J')+b4(0x1fc,'s82t')+b4(0x95e,'k[!J')+b4(0x3d9,'MXw)')+b4(0x521,'h81]')+b4(0x35f,'L4rB')+b4(0xaa9,'t]Z(')+b4(0x77b,'sxrM')+b4(0x499,'e[5o')+'oTo('+b4(0x37c,'a39O')+b4(0x257,'a9Y1')+b4(0xe8e,'%%$6')+'eldI'+b4(0x338,'t]Z(')+b4(0xe4d,'z%E0')+b4(0xaeb,'o[N[')+b4(0x9be,'[v!t')+b4(0xf50,'D6Ng')+b4(0x9da,'6cMO')+b4(0x98c,'6cMO')+'t-fa'+b4(0x606,'q8Bo')+b4(0xa55,'sxrM')+b4(0x1a7,'MXw)')+'\x27,sa'+b4(0x249,'sxrM')+b4(0x52b,'K9Qw')+b4(0x52a,'D6Ng')+b4(0x2fb,'7pUY')+'ze:1'+'2px;'+b4(0xd75,'*RuJ')+b4(0x766,'V2V&')+b4(0xeb6,'a9Y1')+b4(0xbab,'7pUY')+b4(0xe0b,'vPX^')+b4(0x380,'*TyZ')+b4(0xa05,'dBMV')+b4(0x9e6,'#QaB')+b4(0x4c2,'e[5o')+b4(0x7e6,'s82t')+b4(0xd13,'lk$d')+'rans'+b4(0xe73,'o[N[')+b4(0x3b6,'#QaB')+b4(0x6dc,'jFI9')+b4(0xca6,'a9Y1')+'addi'+'ng:0'+b4(0x7a2,'vPX^')+b4(0x827,'7pUY')+'6rem'+b4(0xc3e,'2y3n')+b4(0x6f7,'k[!J')+b4(0x856,'V2V&')+b4(0x306,'dBMV')+b4(0x207,'B2Qs')+'colo'+b4(0xb6e,'D6Ng')+b4(0x7d5,'Z&At')+'a;bo'+b4(0xbd2,']Pkk')+b4(0x339,'k[!J')+b4(0x52f,'t]Z(')+b4(0xf60,'vPX^')+b4(0xf4a,'a9Y1')+'nter'+b4(0xc49,'h81]')+'x:1;'+b4(0x733,'%3rk')+b4(0x517,'B2Qs')+b4(0x3ea,'vPX^')+b4(0x1b6,'#QaB')+b4(0xa26,'t]Z(')+b4(0xa72,'Blg8')+b4(0xde3,'B2Qs')+b4(0x45b,'*TyZ')+b4(0xddc,'YXJ%')+b4(0x691,'q8Bo')+'n>\x0a\x20'+b4(0x5d3,'a9Y1')+b4(0x78c,'qDi)')+b4(0x1b7,'!h#8')+b4(0x22c,'Blg8')+b4(0x197,'%3rk')+b4(0xbd1,'Z&At')+b4(0x683,'^1(%')+b4(0x2bb,'YXJ%')+b4(0x307,'D6Ng')+b4(0xa6a,'Ux(P')+b4(0x250,'lk$d')+b4(0x3de,'dBMV')+b4(0x9e4,'PS&p')+b4(0x28b,'qDi)')+b4(0x62c,'Ux(P')+b4(0x1df,'a9Y1')+b4(0x7f4,'[v!t')+b4(0xaff,'k[!J')+b4(0xe86,'6cMO')+b4(0x509,']Pkk')+b4(0x5d3,'a9Y1')+b4(0x564,'k[!J')+b4(0xb55,'L4rB')+'ont-'+b4(0xd6b,'h81]')+b4(0xe72,'*RuJ')+b4(0x826,'a39O')+b4(0x300,'%%$6')+b4(0x72b,'L4rB')+b4(0x3cf,'L4rB')+'if;f'+b4(0x9e7,'%%$6')+b4(0x2dd,'*TyZ')+b4(0x38c,'lw7*')+b4(0x9a9,'a39O')+b4(0xa2c,'h81]')+b4(0x371,'t]Z(')+b4(0xf4c,'!#qZ')+b4(0xb74,'o[N[')+'tter'+b4(0xbcd,'K9Qw')+b4(0x362,'lk$d')+b4(0x7ff,'#QaB')+b4(0xc13,'YXJ%')+b4(0x732,'B2Qs')+b4(0x48c,'%%$6')+b4(0x1b5,'2y3n')+b4(0x1ab,'V2V&')+b4(0x57d,'k[!J')+b4(0xb32,'I@]]')+b4(0xf2f,'e[5o')+b4(0x48e,'*RuJ')+b4(0x1cc,'t]Z(')+b4(0x24a,'lk$d')+b4(0x701,'2y3n')+b4(0x7b3,'a9Y1')+b4(0xf05,'I@]]')+'roun'+b4(0x559,'7pUY')+'ansp'+b4(0x730,'G^2z')+b4(0xae4,'PS&p')+b4(0x556,'sxrM')+b4(0x609,'7pUY')+b4(0x8a9,'Z&At')+b4(0xa12,'Ux(P')+b4(0xc68,'a9Y1')+b4(0x7ed,'qDi)')+b4(0x5d2,'z%E0')+'id\x20#'+b4(0x42b,'t]Z(')+b4(0x545,'s82t')+b4(0x2d7,'PS&p')+b4(0x2e3,'lw7*')+b4(0x6d1,'a9Y1')+'r;\x22>'+b4(0xd84,'0PnE')+b4(0xe2c,'sxrM')+b4(0x755,'I@]]')+b4(0x99c,'%%$6')+b4(0x4bd,'6cMO')+b4(0xdc5,'e[5o')+b4(0x415,'vPX^')+b4(0xddf,'qDi)')+b4(0x579,'a39O')+b4(0xdad,'B2Qs')+b4(0x4be,'^1(%')+'\x20',a6[b4(0x281,'Ux(P')+b4(0x9d9,'[v!t')+'L']=ab,a5[b4(0x961,'jFI9')+b4(0x846,'%3rk')+b4(0xf4e,'Blg8')](a6),U[b4(0xda7,'lk$d')]['appe'+b4(0x8d9,'h81]')+b4(0xca5,'[v!t')](a5),a5[b4(0xd17,'a9Y1')+'vent'+b4(0x3c6,'D6Ng')+b4(0x816,'%%$6')](b4(0x53a,'(#Eo')+'k',ag=>{const b5=b4;if(V[b5(0x68b,'K9Qw')+'o'](ag[b5(0x935,'o[N[')+'et'],a5))a5[b5(0x891,'lN7q')+'ve']();});}else{if(a2[b4(0x328,'vPX^')](T)){const a3={};a3[b4(0x28f,']Pkk')+'age']=a2['mess'+b4(0x4e3,'MXw)')],a3[b4(0x199,'6cMO')+'ple']=a2[b4(0xba1,'s82t')+b4(0x470,'lk$d')],Y['push'](a3);}}}const Z={};Z[b4(0x675,']Pkk')+'e']=b4(0x4ca,'(#Eo')+'ng',Z[b4(0x813,'#QaB')+'es']=[];if(j[b4(0x3a3,'qDi)')+'M'](Y[b4(0x50a,'1[R^')+'th'],-0x99+0xa1*0x5+-0x28c))return Z;if(j[b4(0x873,'l@jE')+'M'](Y[b4(0x671,'%%$6')+'th'],-0x49a+-0x4*0x4f6+-0x1*-0x1873))return{'score':j[b4(0xc63,'t]Z(')+'v'],'issues':Y};const a0={};return a0[b4(0x831,'sxrM')+'e']=j[b4(0x900,'l@jE')+'f'],a0['issu'+'es']=Y,a0;}function M(){const b7=ai,S={'Vhemm':function(U,V){const b6=a0d;return j[b6(0x956,'(#Eo')+'S'](U,V);}};if(b7(0x1af,'sj5%')+'m'===j['dHzo'+'W']){if(j['skry'+'u'](p[b7(0x678,'!#qZ')+'et'],q))r[b7(0x9a5,'YXJ%')+'ve']();}else{const U=[b7(0xd48,'k[!J'),j[b7(0xc65,'ooPv')+'X'],b7(0x2c0,'B2Qs'),j[b7(0xc8c,'7pUY')+'w'],j[b7(0x3c1,'dBMV')+'q'],j[b7(0x61c,'e[5o')+'w'],j[b7(0xbeb,'0PnE')+'i'],j[b7(0xd2f,'G^2z')+'A'],j[b7(0xd2c,'sj5%')+'A'],j[b7(0xdc7,'sxrM')+'O'],j[b7(0x221,'PS&p')+'u'],j[b7(0x7eb,'#QaB')+'w'],j[b7(0x668,'B2Qs')+'O']],V=[];let W=!![];for(const Y of U){const Z=j[b7(0x1a2,'sj5%')+'r'](C,Y);if(!Z){if(j['HWYQ'+'J'](b7(0xa97,'vPX^')+'g',j[b7(0x208,'6cMO')+'b'])){const a3=S[b7(0x475,'lw7*')+'m'](q,r);if(a3)s(t,a3);}else{const a3={};a3['id']=Y,a3[b7(0xc2e,'e[5o')]=K[Y],a3[b7(0x43d,'a39O')+'e']=j['EziU'+'p'],a3[b7(0x204,'0PnE')+'es']=[{'message':j['CFfp'+'f'],'example':''}],V['push'](a3),W=![];continue;}}const {score:a0,issues:a1}=j[b7(0x28a,'lk$d')+'N'](L,Y,Z);if(j[b7(0x99d,'lk$d')+'h'](a0,j[b7(0x99e,'0PnE')+'b']))W=![];const a2={};a2['id']=Y,a2[b7(0x81a,'vPX^')]=K[Y],a2['scor'+'e']=a0,a2[b7(0xd47,'lk$d')+'es']=a1,V[b7(0x36d,'vPX^')](a2);}const X={};return X['resu'+b7(0xd6f,'[v!t')]=V,X[b7(0x853,'*TyZ')+'uild']=W,X;}}function N(S){const b9=ai,T={'PYcDy':function(V,W){const b8=a0d;return j[b8(0x673,'q8Bo')+'d'](V,W);},'ubbaU':j[b9(0xa9c,'D6Ng')+'c'],'hTafD':function(V,W){const ba=b9;return j[ba(0x225,'l@jE')+'U'](V,W);},'QDuqJ':b9(0x898,'*TyZ')+'r\x20al'+b9(0x456,'V2V&')+b9(0xd27,'vPX^')+b9(0x786,'q8Bo')+b9(0x1c4,'sj5%')+'rt\x20o'+b9(0xb2d,'%%$6'),'qNVKY':function(V){const bb=b9;return j[bb(0x1e8,'[v!t')+'C'](V);}};if(j[b9(0xadb,'sxrM')+'B'](j[b9(0xbc6,'0PnE')+'s'],j['KLex'+'k'])){const V=document[b9(0xcba,'(#Eo')+b9(0xca0,'dBMV')+b9(0x774,'lw7*')+'Id'](j['TTmx'+'C']);if(V)V[b9(0xd7a,'V2V&')+'ve']();const W=S[b9(0x222,'!#qZ')+'er'](a4=>a4['scor'+'e']!==b9(0xea2,'K9Qw')+'ng'),X=document[b9(0x92e,'7pUY')+b9(0x2a8,'dBMV')+b9(0xb92,'h81]')+'t'](j[b9(0xa61,'s82t')+'G']);X['id']=j[b9(0x987,'lw7*')+'C'],X['styl'+'e'][b9(0xa0a,'[v!t')+'ext']='\x0a\x20\x20\x20'+'\x20pos'+b9(0x29b,'t]Z(')+b9(0xda0,'MXw)')+b9(0x929,'o[N[')+b9(0x2cc,'s82t')+b9(0x885,'0PnE')+b9(0xa98,'*TyZ')+b9(0x43f,'qDi)')+'grou'+b9(0xa35,'%%$6')+b9(0xad0,'sj5%')+'(13,'+b9(0xa6c,'h81]')+b9(0xf19,'lw7*')+'75);'+b9(0x789,'sxrM')+'\x20dis'+b9(0x4f0,'PS&p')+b9(0xa8f,'ooPv')+b9(0x622,'*RuJ')+b9(0x4bf,'K9Qw')+b9(0x236,'!#qZ')+b9(0x1e7,'a39O')+'\x20cen'+b9(0x6f2,'I@]]')+b9(0xd68,'!#qZ')+'tify'+b9(0x6ef,'lw7*')+b9(0x90b,'a39O')+b9(0xa32,'o[N[')+b9(0x7ba,'dBMV')+';\x0a\x20\x20'+b9(0x969,'Ux(P')+b9(0xc5e,'!#qZ')+b9(0xb09,'(#Eo')+b9(0x94a,'a39O')+b9(0x4b7,'6cMO')+b9(0x48e,'*RuJ')+b9(0xd91,'!#qZ')+b9(0x8d1,'l@jE')+'\x20\x20';const Y=document[b9(0x8bc,'[v!t')+b9(0x3f4,'Blg8')+b9(0x588,'sj5%')+'t'](j[b9(0xac2,'G^2z')+'G']);Y[b9(0x4f6,'MXw)')+'e'][b9(0x6e7,'e[5o')+b9(0x700,'lk$d')]=b9(0xdfb,'Ux(P')+b9(0xee3,'L4rB')+'kgro'+b9(0xc00,'0PnE')+b9(0x2e1,'[v!t')+b9(0xf5d,'PS&p')+b9(0xc4e,'7pUY')+b9(0x623,'2y3n')+b9(0xb28,'!#qZ')+b9(0x750,'MXw)')+b9(0x284,'s82t')+b9(0x8bd,'l@jE')+'h:\x201'+b9(0xf0b,'I@]]')+b9(0xd0c,'#QaB')+b9(0x941,'YXJ%')+b9(0x2fe,'Blg8')+b9(0xc7c,'MXw)')+b9(0xec5,'^1(%')+b9(0x832,'K9Qw')+b9(0x53e,'lw7*')+b9(0x594,'Ux(P')+b9(0x400,'K9Qw')+b9(0x8fa,'K9Qw')+'\x0a\x20\x20\x20'+b9(0x9f4,'Ux(P')+b9(0xafc,'B2Qs')+b9(0x957,'7pUY')+b9(0xf48,'Blg8')+b9(0x608,'B2Qs')+b9(0x680,'ooPv')+b9(0xaac,'qDi)')+b9(0x82d,'G^2z')+b9(0xae8,'G^2z')+b9(0xba0,'!#qZ')+'ding'+b9(0x822,'2y3n')+b9(0x834,'l@jE')+b9(0xb4e,'*RuJ')+'\x20\x20fo'+b9(0xce5,'G^2z')+b9(0x7b5,'*TyZ')+b9(0x4f8,'%3rk')+b9(0x359,'lN7q')+b9(0x6fb,'*TyZ')+b9(0xe47,'%3rk')+b9(0xa96,'1[R^')+b9(0xc36,'MXw)')+b9(0x990,'PS&p');const Z={};Z[b9(0x7e0,'s82t')+'y']=j[b9(0x3fb,'D6Ng')+'I'],Z[b9(0x41f,'B2Qs')+b9(0xcb1,'l@jE')]=j[b9(0x868,'Ux(P')+'I'],Z[b9(0x589,'jFI9')]=j[b9(0x6bd,'o[N[')+'m'];const a0=Z,a1={};a1['empt'+'y']=j[b9(0x851,'s82t')+'j'],a1[b9(0xed3,'h81]')+b9(0x918,'0PnE')]=j['fBYq'+'v'],a1[b9(0x591,'6cMO')]=j[b9(0x997,'*TyZ')+'K'];const a2=a1;let a3=b9(0xcdd,']Pkk')+'\x20<di'+'v\x20st'+b9(0xd6a,'1[R^')+b9(0x3b9,'2y3n')+'t-fa'+b9(0xb10,'lN7q')+b9(0xdcb,'V2V&')+b9(0x56f,'2y3n')+b9(0x777,'7pUY')+b9(0x8f0,'I@]]')+b9(0xc16,'q8Bo')+b9(0x7dc,'!#qZ')+b9(0x4bc,'*TyZ')+b9(0xd9c,'K9Qw')+'0px;'+b9(0xed9,'Blg8')+b9(0xb2f,'e[5o')+'paci'+b9(0x8f5,'a39O')+b9(0x379,'k[!J')+b9(0x76f,'h81]')+b9(0xab4,'l@jE')+b9(0x640,'G^2z')+b9(0xf32,']Pkk')+b9(0xf18,'MXw)')+b9(0x5e2,'ooPv')+b9(0x388,'YXJ%')+b9(0xd69,'a9Y1')+b9(0xa28,'k[!J')+'1a1a'+b9(0xcea,'%%$6')+b9(0xbf8,'e[5o')+b9(0x18a,'(#Eo')+b9(0x440,'qDi)')+b9(0x9b7,'l@jE')+b9(0x8c7,'qDi)')+'>Int'+b9(0x27f,'V2V&')+b9(0x4d7,'6cMO')+b9(0xbff,'[v!t')+'yer\x20'+b9(0xaab,'%3rk')+b9(0x58d,'s82t')+'ment'+b9(0xb0f,'6cMO')+b9(0xaf6,'lN7q')+b9(0x57b,'sj5%')+b9(0xba3,'a39O')+b9(0x4d8,'2y3n')+b9(0xb07,'qDi)')+b9(0x7f2,'0PnE')+b9(0xab3,'K9Qw')+b9(0x5a2,'s82t')+'-fam'+b9(0x52e,'ooPv')+b9(0xe00,']Pkk')+b9(0x321,'e[5o')+b9(0x203,'qDi)')+b9(0x5fd,'*TyZ')+b9(0x5ac,'vPX^')+b9(0x65e,'K9Qw')+b9(0x9d0,'!#qZ')+b9(0xa37,'t]Z(')+b9(0x2bd,'D6Ng')+b9(0x963,'l@jE')+b9(0x5bc,'MXw)')+b9(0x83c,'z%E0')+'eigh'+b9(0x3a4,'^1(%')+b9(0x242,'lw7*')+b9(0x556,'sxrM')+b9(0xce9,'B2Qs')+b9(0x51d,'*RuJ')+'marg'+'in-b'+'otto'+'m:0.'+b9(0x31f,'I@]]')+b9(0x1a1,'l@jE')+b9(0x97d,'V2V&')+'inpu'+b9(0x4d4,'D6Ng')+'re\x20n'+b9(0x982,'s82t')+b9(0x373,'^1(%')+b9(0x955,'*RuJ')+b9(0xc67,'1[R^')+b9(0x567,'2y3n')+b9(0x50b,'2y3n')+'\x20\x20\x20\x20'+'<div'+b9(0x386,'MXw)')+b9(0x968,'[v!t')+b9(0x3da,'!h#8')+'-siz'+'e:13'+b9(0x22b,'(#Eo')+'olor'+b9(0xd9d,'a39O')+b9(0xe1e,'G^2z')+';lin'+b9(0x4ea,'ooPv')+b9(0x687,'sxrM')+':1.7'+b9(0xada,'Blg8')+b9(0x19f,'vPX^')+b9(0x7cd,'h81]')+b9(0xbb3,'G^2z')+'rem;'+b9(0xea7,'1[R^')+b9(0x526,'jFI9')+b9(0x347,'6cMO')+'ing\x20'+'fiel'+b9(0x6e9,'sj5%')+b9(0x6eb,'1[R^')+b9(0x7e4,'z%E0')+b9(0xf02,'lw7*')+b9(0xc19,']Pkk')+b9(0x599,'h81]')+'tion'+b9(0x626,'h81]')+b9(0x747,'MXw)')+b9(0x4ad,'sj5%')+b9(0x34b,'I@]]')+b9(0xb3b,'*TyZ')+b9(0x1c5,'o[N[')+b9(0xeb1,'a39O')+b9(0x2e0,'vPX^')+b9(0x644,'B2Qs')+b9(0xe61,'%%$6')+b9(0x977,'2y3n')+b9(0xe53,'YXJ%')+b9(0x9a1,'[v!t')+b9(0x30f,'*TyZ')+b9(0x5f2,'L4rB')+b9(0x710,'*TyZ')+b9(0xe6c,'%3rk')+b9(0x4c0,']Pkk')+b9(0xd78,'s82t')+b9(0x90c,'k[!J')+'\x20be\x20'+b9(0x962,'t]Z(')+b9(0x5c8,'#QaB')+b9(0x4a0,'MXw)')+b9(0x99b,'lk$d');for(const a4 of W){const a5=a0[a4[b9(0xc26,'q8Bo')+'e']]||j[b9(0x63c,'e[5o')+'m'],a6=a2[a4[b9(0x3c8,'Ux(P')+'e']]||j[b9(0x5cf,'jFI9')+'W'];a3+='\x0a\x20\x20\x20'+b9(0x93e,'o[N[')+b9(0xe91,'*TyZ')+b9(0x621,'jFI9')+'e=\x22b'+b9(0xc30,'0PnE')+b9(0xc87,'o[N[')+'x\x20so'+'lid\x20'+b9(0xe5a,'l@jE')+b9(0xd25,'Z&At')+b9(0xa2f,'2y3n')+b9(0x66b,'k[!J')+b9(0x273,'7pUY')+b9(0xb03,'!h#8')+b9(0x5b5,'*TyZ')+'d\x20'+a5+(b9(0x872,'k[!J')+b9(0x70a,'lN7q')+b9(0x818,'s82t')+'5rem'+b9(0x812,'lN7q')+b9(0xd07,'K9Qw')+'marg'+'in-b'+b9(0xcb3,'MXw)')+'m:1.'+b9(0x301,'lN7q')+b9(0xb4b,'e[5o')+b9(0xc82,'lN7q')+b9(0x3db,'Ux(P')+b9(0xaba,'lN7q')+b9(0x7fa,'G^2z')+b9(0x29e,'sj5%')+b9(0x93f,'t]Z(')+'\x20<di'+b9(0xb73,'B2Qs')+b9(0x619,'jFI9')+b9(0xdaf,'z%E0')+b9(0x699,'I@]]')+b9(0x1d1,'lN7q')+b9(0xea0,'!h#8')+b9(0x3ed,'1[R^')+b9(0xf53,'a9Y1')+b9(0xe7d,'lN7q')+b9(0x2a0,'s82t')+';jus'+'tify'+b9(0x4ec,']Pkk')+b9(0x897,'e[5o')+b9(0x3a6,'dBMV')+b9(0x1b3,'Ux(P')+b9(0xc86,'*RuJ')+b9(0x9b5,'o[N[')+b9(0xb31,'z%E0')+b9(0x1bf,'k[!J')+b9(0xdd4,'(#Eo')+b9(0x8f3,'lN7q')+'rem;'+b9(0x7a8,'6cMO')+b9(0x24c,'D6Ng')+'\x20\x20\x20\x20'+b9(0xf2d,'%%$6')+b9(0x343,'0PnE')+'yle='+b9(0x74b,'0PnE')+b9(0x3d7,'qDi)')+b9(0x4a2,'!h#8')+b9(0x196,'L4rB')+b9(0x7f1,'Z&At')+b9(0xe66,'YXJ%')+'onos'+b9(0x696,'Blg8')+';fon'+b9(0x76c,'G^2z')+b9(0xb9b,'o[N[')+b9(0x6cd,'k[!J')+b9(0x649,'lk$d')+'er-s'+'paci'+b9(0xb2c,'YXJ%')+b9(0x9f1,'1[R^')+b9(0x73d,'o[N[')+'xt-t'+b9(0xa3b,'[v!t')+b9(0x381,'2y3n')+b9(0x61d,'s82t')+b9(0xa50,'lN7q')+b9(0x656,'lN7q')+b9(0x4c5,'z%E0')+b9(0xa9d,'PS&p')+b9(0x2a6,'h81]')+b9(0xa79,'t]Z('))+(a4[b9(0x4a3,'Z&At')]?.[b9(0x9a2,'PS&p')+'d']||'')+b9(0xe93,'a39O')+(a4[b9(0x29d,'L4rB')]?.[b9(0xb3a,'a9Y1')+'l']||a4['id'])+(b9(0xe3a,'lw7*')+b9(0x642,'a39O')+b9(0x587,'1[R^')+b9(0x707,'o[N[')+b9(0xaf4,'s82t')+b9(0x753,'6cMO')+b9(0x576,'dBMV')+b9(0xd9e,'PS&p')+b9(0x631,'YXJ%')+b9(0xad4,'2y3n')+b9(0x8af,'YXJ%')+b9(0x45f,'q8Bo')+b9(0x998,'PS&p')+b9(0x630,'sxrM')+'pace'+b9(0xef9,'2y3n')+b9(0x2fb,'7pUY')+b9(0x4fd,'*TyZ')+b9(0xb18,'(#Eo')+b9(0x318,'!h#8')+'r-sp'+b9(0x232,'t]Z(')+b9(0x694,'%%$6')+b9(0xb4d,'lN7q')+b9(0xedc,'B2Qs')+b9(0x41c,'e[5o')+b9(0x6b3,'K9Qw')+b9(0x2b8,'Ux(P')+b9(0xb15,'sj5%')+b9(0xa93,'!#qZ')+b9(0xef5,'ooPv'))+a5+(b9(0x3d5,'!#qZ')+b9(0x4ff,'^1(%')+b9(0x532,'sj5%')+'\x22>')+a6+(b9(0x2e8,'*TyZ')+'v>\x0a\x20'+b9(0x4bd,'6cMO')+b9(0x3b2,'z%E0')+b9(0xcfc,'Ux(P')+'>\x0a\x20\x20'+'\x20\x20');for(const a7 of a4[b9(0xd29,'a39O')+'es']){j[b9(0xa5d,'6cMO')+'m']===b9(0x3df,'a9Y1')+'u'?a3+=b9(0xae8,'G^2z')+b9(0x350,'l@jE')+b9(0x8ba,'a9Y1')+b9(0xeec,'vPX^')+'yle='+b9(0x72f,'vPX^')+b9(0x1d6,'I@]]')+b9(0x3fc,'lw7*')+b9(0x983,'q8Bo')+b9(0x349,'Ux(P')+'r:#2'+'e2c2'+b9(0x4f1,'ooPv')+'ne-h'+b9(0xe57,'Ux(P')+b9(0xb50,'!h#8')+b9(0x62d,'qDi)')+b9(0x674,'!h#8')+'n-bo'+b9(0xe2f,'2y3n')+b9(0x3c2,'o[N[')+b9(0xd07,'K9Qw')+'\x22>'+a7[b9(0xc94,'YXJ%')+b9(0xc60,'%%$6')]+(b9(0x5cb,'k[!J')+b9(0xd2b,'Blg8')+b9(0x443,'lk$d')+b9(0x3f5,'h81]'))+(a7['exam'+b9(0xebb,'lN7q')]?b9(0xb07,'qDi)')+b9(0x55e,'s82t')+b9(0x3ec,'D6Ng')+b9(0xa90,'z%E0')+b9(0x849,'6cMO')+b9(0x22f,'dBMV')+b9(0xeef,'^1(%')+b9(0x577,'2y3n')+b9(0x190,'G^2z')+b9(0x70d,'s82t')+b9(0x602,'a9Y1')+b9(0xd19,'7pUY')+b9(0x6e0,'[v!t')+b9(0x312,'6cMO')+b9(0xa00,'!h#8')+b9(0x403,'a39O')+b9(0xe40,'a39O')+b9(0x68a,'!h#8')+b9(0xd8c,'a9Y1')+b9(0x60a,'qDi)')+b9(0x2e7,'2y3n')+b9(0xa10,'k[!J')+b9(0xe6b,'sxrM')+b9(0x81c,'#QaB')+b9(0x769,'!h#8')+b9(0x68d,'l@jE')+b9(0xa3c,'7pUY')+b9(0x593,'qDi)')+b9(0x3a0,'V2V&')+b9(0x920,'h81]')+b9(0x74d,'2y3n')+b9(0xb76,'0PnE')+b9(0x2c8,'*TyZ')+b9(0x819,'lw7*')+b9(0xd85,'Z&At')+b9(0xcd3,'#QaB')+b9(0xe84,'l@jE')+b9(0xc43,'MXw)')+b9(0xb4a,'MXw)')+b9(0xef2,'qDi)')+b9(0xe99,'6cMO')+b9(0x535,'2y3n')+b9(0xeb3,'l@jE')+'ger\x20'+b9(0xee4,'vPX^')+b9(0xbcf,'L4rB')+a7[b9(0xb59,'V2V&')+b9(0xb64,'%3rk')]+(b9(0x4e2,'z%E0')+'v>'):'')+(b9(0xeb9,'PS&p')+b9(0x8ca,'D6Ng')):(t=!![],u[b9(0x36d,'vPX^')](ndQIMv[b9(0xd02,'jFI9')+'y'](ndQIMv[b9(0xda5,'dBMV')+'U'],Z[a1])),l['push'](...m),n[b9(0x482,']Pkk')](''));}a3+=b9(0xaaa,'*RuJ')+'v>';}a3+=b9(0x1c0,'^1(%')+b9(0x364,'sxrM')+b9(0xde5,'l@jE')+b9(0xd42,'L4rB')+b9(0xb16,']Pkk')+b9(0x398,'%3rk')+b9(0x4e7,'e[5o')+b9(0xbfb,'Ux(P')+b9(0xb40,'Z&At')+b9(0x3d2,'I@]]')+b9(0xe6a,'qDi)')+b9(0xab8,'s82t')+'p:1.'+'5rem'+b9(0x414,'%%$6')+b9(0x350,'l@jE')+b9(0x8d7,'a9Y1')+b9(0x7d7,'YXJ%')+'n\x20on'+b9(0xe39,'K9Qw')+b9(0x6fc,']Pkk')+b9(0xe42,'%%$6')+b9(0x352,'Z&At')+b9(0x474,'I@]]')+b9(0x27c,'*TyZ')+b9(0x6ca,'2y3n')+b9(0xa75,'jFI9')+b9(0x48a,'%3rk')+b9(0xb00,'s82t')+b9(0xa7f,'PS&p')+b9(0x2ca,'6cMO')+b9(0x8d5,'e[5o')+b9(0x291,'Z&At')+b9(0xc9a,'2y3n')+b9(0xf4f,'qDi)')+b9(0x512,'!#qZ')+b9(0x698,'6cMO')+b9(0xae5,'l@jE')+b9(0x384,'PS&p')+'ndex'+b9(0x3a5,'*TyZ')+b9(0x8d0,'V2V&')+b9(0x443,'lk$d')+'\x20\x20st'+b9(0xaae,'k[!J')+b9(0xbf0,'MXw)')+b9(0xc76,'G^2z')+b9(0x692,'lw7*')+b9(0x7f9,'(#Eo')+b9(0x805,'PS&p')+b9(0x93b,'sxrM')+b9(0x7e8,'o[N[')+b9(0xf1c,'jFI9')+b9(0x89e,'B2Qs')+b9(0xbae,'V2V&')+b9(0x610,'%3rk')+b9(0xbb2,'B2Qs')+'font'+b9(0xf08,'q8Bo')+b9(0x428,'^1(%')+b9(0x518,'lk$d')+b9(0x5f3,'7pUY')+b9(0x6d2,'!#qZ')+b9(0x5da,'0PnE')+b9(0xd7c,'sj5%')+b9(0xca8,'vPX^')+b9(0x582,'B2Qs')+b9(0x89b,'k[!J')+b9(0xf0d,'lw7*')+'form'+b9(0x3b6,'#QaB')+b9(0x6e2,'e[5o')+b9(0xae7,'%%$6')+b9(0x335,'7pUY')+b9(0x308,'Blg8')+'.8re'+b9(0x270,'Blg8')+b9(0x984,'l@jE')+';bac'+b9(0x287,'%%$6')+b9(0x23e,'lw7*')+b9(0x4e1,'6cMO')+b9(0xd45,'t]Z(')+b9(0x21f,'L4rB')+b9(0x7ee,'PS&p')+b9(0x669,'o[N[')+b9(0x544,']Pkk')+b9(0xf45,'k[!J')+':non'+b9(0xd1f,'^1(%')+'rsor'+b9(0x7a5,'l@jE')+b9(0xb1e,'%3rk')+b9(0x2c1,'sj5%')+'x:1;'+'\x22>\x0a\x20'+b9(0x24c,'D6Ng')+b9(0x8aa,'a39O')+b9(0xa2a,'Z&At')+b9(0x534,'ooPv')+b9(0x24e,'sj5%')+b9(0x6f9,'sxrM')+b9(0x69c,'^1(%')+b9(0x193,'!#qZ')+b9(0xcae,'PS&p')+b9(0xd00,']Pkk')+b9(0x5d3,'a9Y1')+b9(0xa46,'sj5%')+b9(0xefa,'sxrM')+b9(0x840,'*TyZ')+b9(0xe23,'1[R^')+b9(0x71a,'L4rB')+b9(0x847,'G^2z')+b9(0xb11,'o[N[')+'etEl'+b9(0xecc,'e[5o')+b9(0x492,'k[!J')+b9(0xe4e,'sxrM')+'efin'+b9(0x67c,'z%E0')+b9(0xf43,'lk$d')+b9(0x59a,'2y3n')+b9(0x780,'Blg8')+b9(0x4cf,'jFI9')+b9(0xc52,'a9Y1')+b9(0x4a6,'e[5o')+'\x20\x20\x20\x20'+b9(0x402,'D6Ng')+'e=\x22f'+b9(0xa51,'Z&At')+b9(0x676,'sxrM')+b9(0x87b,'ooPv')+b9(0xceb,'z%E0')+b9(0xe6e,'Ux(P')+'sans'+b9(0x96d,'dBMV')+b9(0xd63,'Z&At')+b9(0xf09,'MXw)')+b9(0x8c0,'lw7*')+b9(0x5aa,'[v!t')+b9(0x9c7,'1[R^')+b9(0xa9e,'k[!J')+b9(0xe69,'qDi)')+b9(0xefc,'[v!t')+'0;le'+b9(0xe48,'sxrM')+b9(0x5e6,'0PnE')+'cing'+':0.0'+b9(0xce4,'Ux(P')+b9(0xcde,'G^2z')+b9(0xd43,'PS&p')+b9(0x9f7,'^1(%')+b9(0x94c,'z%E0')+b9(0xe19,'7pUY')+b9(0x61e,'YXJ%')+b9(0x44d,'q8Bo')+b9(0x251,'e[5o')+':0.8'+b9(0xc05,'^1(%')+b9(0x96e,'(#Eo')+'em;b'+b9(0x87a,'*RuJ')+b9(0xb86,'1[R^')+'d:tr'+b9(0xdbb,'l@jE')+'aren'+b9(0x954,'ooPv')+b9(0xce6,'s82t')+b9(0xee9,'%3rk')+b9(0x7a1,'qDi)')+b9(0x87d,'lk$d')+b9(0xf4d,'%3rk')+b9(0xc25,'^1(%')+b9(0xc10,'Z&At')+'id\x20#'+b9(0x973,'%3rk')+b9(0xb5e,'ooPv')+b9(0x404,'7pUY')+b9(0x854,'7pUY')+b9(0x40e,'YXJ%')+b9(0xc17,'D6Ng')+b9(0xd84,'0PnE')+b9(0xe1f,'jFI9')+b9(0xaa0,'ooPv')+b9(0x191,'MXw)')+b9(0x90a,'sj5%')+b9(0x45a,'Blg8')+b9(0x2a9,'G^2z')+b9(0x434,'Ux(P')+b9(0x327,'I@]]')+b9(0xda1,'e[5o')+b9(0xdb4,'lw7*')+'\x20',Y[b9(0x62e,'7pUY')+b9(0x8b5,'MXw)')+'L']=a3,X['appe'+b9(0x1d2,'z%E0')+b9(0x639,'^1(%')](Y),document['body'][b9(0x76b,'a9Y1')+b9(0xe8c,'ooPv')+b9(0xe38,'s82t')](X),X[b9(0x253,'s82t')+b9(0xb54,'Z&At')+b9(0x989,'lw7*')+b9(0x5af,'dBMV')](j[b9(0x9cc,'q8Bo')+'q'],a8=>{const bc=b9;if(j[bc(0xc01,'h81]')+'A']===j[bc(0xa49,'Ux(P')+'A']){if(j[bc(0x55b,'Blg8')+'l'](a8[bc(0xbd8,'^1(%')+'et'],X))X[bc(0xdc2,'a9Y1')+'ve']();}else{if(!ndQIMv[bc(0x504,'h81]')+'D'](r,ndQIMv[bc(0xb2b,'sj5%')+'J']))return;s[bc(0x7da,'ooPv')+bc(0x6a4,'K9Qw')](aa=>aa[bc(0x7dd,'q8Bo')+'ts'][bc(0x68f,'l@jE')+'ach'](ab=>{const bd=bc,ac=aa[bd(0xd8d,'YXJ%')+bd(0xccc,'e[5o')+bd(0x37b,'#QaB')+'Id'](ab);if(ac)ac[bd(0x925,'lN7q')+'e']='';})),u(-0x1*-0x201b+0x1562+-0x357d),ndQIMv[bc(0x69e,'sj5%')+'Y'](Z);}});}else q+=b9(0x8ad,'D6Ng')+b9(0xa11,'k[!J')+'\x20<di'+b9(0x85f,'1[R^')+'yle='+b9(0x5d6,'%%$6')+b9(0x27d,'k[!J')+b9(0x313,'sxrM')+'3px;'+b9(0x4a7,'V2V&')+b9(0xc53,'K9Qw')+b9(0xb68,'D6Ng')+b9(0xb7f,'lk$d')+b9(0xeb4,'k[!J')+b9(0x1a8,'z%E0')+b9(0x52c,'s82t')+b9(0xa2d,'k[!J')+b9(0x887,'lN7q')+b9(0x3c0,'s82t')+b9(0x779,'a9Y1')+':0.5'+b9(0x1dd,'V2V&')+'\x22>'+r['mess'+b9(0x81e,'6cMO')]+(b9(0xccd,'D6Ng')+b9(0x1f1,'l@jE')+b9(0x655,'dBMV')+b9(0x233,'V2V&'))+(s[b9(0x720,'L4rB')+b9(0xf1d,'(#Eo')]?b9(0xb99,'jFI9')+b9(0xf13,'#QaB')+'le=\x22'+b9(0x503,'a39O')+b9(0xad1,'YXJ%')+b9(0x4a8,'V2V&')+b9(0xd39,'[v!t')+b9(0x4a9,'o[N[')+':#7a'+b9(0x514,'Z&At')+';fon'+b9(0x63a,'k[!J')+b9(0xe49,'t]Z(')+b9(0x86c,'B2Qs')+'ic;l'+b9(0x5c6,'1[R^')+b9(0x933,'jFI9')+'ht:1'+b9(0x72c,'MXw)')+b9(0x4b9,'I@]]')+b9(0x799,'z%E0')+b9(0xb56,'(#Eo')+b9(0x2a7,'G^2z')+'85re'+b9(0xc04,'z%E0')+b9(0x2a5,'vPX^')+b9(0xcf9,'(#Eo')+b9(0x980,'#QaB')+b9(0x783,'G^2z')+b9(0xdf8,'Z&At')+'der-'+b9(0x54c,'l@jE')+b9(0x7de,'2y3n')+'\x20sol'+b9(0xede,'^1(%')+b9(0xd18,'G^2z')+'2a;m'+b9(0x357,'h81]')+b9(0xd28,'Blg8')+b9(0xe8b,'!#qZ')+b9(0x2db,'t]Z(')+b9(0xc2b,']Pkk')+b9(0xe75,'dBMV')+b9(0x86d,'lN7q')+b9(0x8b6,'h81]')+b9(0x216,'MXw)')+t[b9(0xbe3,'%3rk')+b9(0xb64,'%3rk')]+(b9(0x735,'^1(%')+'v>'):'')+(b9(0x5f4,'o[N[')+b9(0xbc4,'s82t'));}function O(){const be=ai,S={'yHUhS':function(U,V){return j['kWSz'+'a'](U,V);}};if(j['Udnn'+'B'](be(0xdf7,'*RuJ')+'t',j[be(0xb66,'I@]]')+'S'])){const U=[j[be(0xd5e,'sj5%')+'R'],j[be(0xac6,'a39O')+'X'],j['whZk'+'V'],be(0x896,'lN7q'),j['vAdz'+'q'],j['PFnS'+'w'],be(0x1cf,'lN7q'),j[be(0x90f,'PS&p')+'A'],j[be(0xd2c,'sj5%')+'A'],'f4c',be(0xb49,'6cMO'),j[be(0xa4b,']Pkk')+'w'],be(0x75a,'0PnE')];for(let V=-0x787*-0x3+0x1dbf+0x1a2a*-0x2;j[be(0xdba,'s82t')+'V'](V,v[be(0xd96,'qDi)')+'th']);V++){if(j[be(0x815,'h81]')+'W']===j[be(0x78f,'G^2z')+'W'])for(const W of v[V][be(0x5d7,'a39O')+'ts']){if(U[be(0xe96,'YXJ%')+be(0xb8a,'lk$d')](W)){const X=C(W);if(!X)return V;const {score:Y}=L(W,X);if(j[be(0x355,'o[N[')+'h'](Y,j[be(0x99f,'^1(%')+'b']))return V;}}else{S[be(0x81b,'lk$d')+'S'](o,p);return;}}return 0x1f19+0xac8*-0x2+-0x989;}else{const {results:Z,canBuild:a0}=j[be(0x4e9,'q8Bo')+'l'](p);if(!a0){j[be(0x8a8,'[v!t')+'V'](s,Z);return;}j[be(0xd8e,'a9Y1')+'C'](r);}}function P(S,T){const bf=ai,U=document[bf(0xcd6,'k[!J')+bf(0x1c1,'Blg8')+bf(0x295,'sxrM')+'Id'](S);if(!U)return;const V=U[bf(0x1a3,'!h#8')+bf(0xdd2,'h81]')+'de'][bf(0x2b4,'K9Qw')+bf(0xe85,'vPX^')+bf(0xa30,'(#Eo')+'r'](j[bf(0x19d,'sxrM')+'d']);if(V)V['remo'+'ve']();if(!T)return;const {score:W,issues:X}=j[bf(0xc8a,'sj5%')+'N'](L,S,T);if(W===j[bf(0x892,'2y3n')+'b']){const Z=document['crea'+bf(0xb42,'I@]]')+'emen'+'t'](j[bf(0x3b5,'1[R^')+'G']);Z[bf(0x3ff,'k[!J')+'sNam'+'e']=j[bf(0xb8e,'L4rB')+'D'],Z[bf(0xd7d,'o[N[')+'e'][bf(0xc47,'B2Qs')+bf(0x3c7,'7pUY')]=bf(0xac5,'sj5%')+bf(0x1a6,'(#Eo')+bf(0x62f,'PS&p')+bf(0xbb0,'I@]]')+bf(0x1b2,'z%E0')+bf(0x729,'K9Qw')+bf(0x256,'k[!J')+'ace;'+'font'+bf(0xa1e,'K9Qw')+bf(0x19c,'MXw)')+bf(0x1f4,'I@]]')+bf(0x94d,'a9Y1')+bf(0x187,'vPX^')+'acin'+bf(0xa6d,'L4rB')+bf(0x244,'PS&p')+bf(0xe59,'(#Eo')+bf(0x65b,'lN7q')+bf(0x3cd,'%%$6')+bf(0x2ff,'7pUY')+bf(0xc66,'%3rk')+'case'+bf(0xc6a,'sj5%')+bf(0x74a,'%%$6')+bf(0xc3d,'lk$d')+bf(0x9b8,'Ux(P')+bf(0x335,'7pUY')+'ng:4'+bf(0x395,'L4rB')+bf(0xcb9,'I@]]')+bf(0xea3,'6cMO')+bf(0x627,'l@jE')+bf(0x546,'o[N['),Z[bf(0x447,'ooPv')+bf(0x8dd,'L4rB')+bf(0x4a5,'L4rB')]=j['laKd'+'D'],U[bf(0x8d4,'V2V&')+bf(0x285,'!#qZ')+'de'][bf(0x51e,'jFI9')+bf(0x1ff,'B2Qs')+bf(0x7f5,'q8Bo')](Z,U[bf(0xa8a,'t]Z(')+bf(0xb12,'PS&p')+'ing']);}else{if(j[bf(0xabe,'Blg8')+'D'](j[bf(0x401,'(#Eo')+'E'],bf(0x8ab,'s82t')+'H')){const a0=j[bf(0xc4c,'#QaB')+'M'](W,bf(0x383,'lw7*'))?j['elwi'+'m']:j[bf(0x1dc,'*RuJ')+'I'],a1=j[bf(0x3a7,'e[5o')+'u'](W,bf(0x763,'D6Ng'))?j[bf(0x883,'sxrM')+'K']:j[bf(0x248,'sxrM')+'X'],a2=document[bf(0x8bc,'[v!t')+bf(0xc4b,'q8Bo')+bf(0x1a5,'%%$6')+'t'](j['Splt'+'G']);a2[bf(0x4cc,'ooPv')+bf(0xc08,'l@jE')+'e']=j[bf(0x421,'7pUY')+'D'],a2[bf(0xe0d,'e[5o')+'e'][bf(0x6b8,'G^2z')+bf(0x6f0,'q8Bo')]='font'+bf(0x9ca,'h81]')+bf(0xc2d,'V2V&')+bf(0x1f6,'G^2z')+bf(0x92b,'0PnE')+bf(0xb6b,'7pUY')+bf(0x94f,'!h#8')+'ace;'+bf(0x86a,'a9Y1')+bf(0x44f,'!h#8')+bf(0xf54,'V2V&')+'px;l'+bf(0xb6f,'z%E0')+bf(0x72e,'t]Z(')+bf(0xc2f,'vPX^')+bf(0x6e6,'6cMO')+bf(0xab9,'l@jE')+bf(0x5f7,'qDi)')+bf(0x3bf,'a39O')+bf(0xbac,'k[!J')+bf(0x2c7,'#QaB')+'pper'+bf(0x899,'s82t')+bf(0xd67,'B2Qs')+bf(0x9ab,'e[5o')+a0+(';pad'+bf(0x6cb,'#QaB')+bf(0x7c1,'ooPv')+bf(0xed2,'(#Eo')+bf(0xd9b,'YXJ%')+bf(0x8d2,'2y3n')+bf(0x495,'t]Z(')+'x;'),a2[bf(0xa02,'s82t')+bf(0xec8,'a9Y1')+bf(0x590,'MXw)')]=j[bf(0xd5c,'o[N[')+'O'](j[bf(0x8e0,'lN7q')+'s']('⚠\x20',a1),bf(0x67b,'^1(%'))+X[-0x19e6+-0x423*0x4+-0x713*-0x6][bf(0x794,'^1(%')+bf(0x38e,'q8Bo')],U[bf(0xe20,'L4rB')+'ntNo'+'de'][bf(0x8f8,'(#Eo')+bf(0x914,'PS&p')+bf(0xa94,'lN7q')](a2,U[bf(0x536,'jFI9')+bf(0xb5c,'e[5o')+bf(0xa6f,'sxrM')]);}else for(const a3 of o[p][bf(0x1cb,'z%E0')+'ts']){if(v[bf(0xe96,'YXJ%')+bf(0x1e9,'qDi)')](a3)){const a4=j[bf(0xd3c,'0PnE')+'k'](A,a3);if(!a4)return B;const {score:a5}=j[bf(0xdf6,'lw7*')+'Y'](C,a3,a4);if(j[bf(0x25f,'!#qZ')+'b'](a5,j[bf(0x75d,'1[R^')+'b']))return D;}}}}function Q(){const bg=ai;j[bg(0x902,'%3rk')+'K'](D),v[m][bg(0x844,'l@jE')+'ts']['forE'+bg(0xd87,'Ux(P')](S=>{const bh=bg,T=j[bh(0x4b8,'7pUY')+'H'](C,S);if(T)j[bh(0x773,'lN7q')+'o'](P,S,T);});}function R(){const bi=ai;if(j[bi(0x863,'sj5%')+'D']('Jeau'+'f',j[bi(0x457,'lk$d')+'U'])){const {results:T,canBuild:U}=j['mfXf'+'h'](M);if(!U){if(j['LAIL'+'w'](j[bi(0x74e,'o[N[')+'T'],j[bi(0x3d3,'a9Y1')+'S'])){j[bi(0x84e,'k[!J')+'H'](N,T);return;}else return c[bi(0xea5,'YXJ%')+bi(0x320,'l@jE')]()[bi(0xf12,'h81]')+'ch'](KjSlHX[bi(0x775,'[v!t')+'S'])[bi(0x224,'qDi)')+bi(0x6b2,'^1(%')]()['cons'+bi(0xc55,'I@]]')+bi(0x4f2,']Pkk')](d)[bi(0x3bb,'q8Bo')+'ch'](bi(0xa1b,'jFI9')+'+)+)'+bi(0xcca,'6cMO'));}F();}else{if(j[bi(0x505,'6cMO')+'f'](q,j[bi(0x2af,'1[R^')+'p'](r,-0xa34+0x1*-0xb3f+0x1574)))j[bi(0xc4d,'Ux(P')+'W'](s,j[bi(0x49a,'(#Eo')+'G'](t,0x25*0x82+0x903*0x2+-0x24cf));}}window[ai(0x7c3,'*TyZ')]=y,window['next']=z,window[ai(0x2e9,'K9Qw')]=A,window['upda'+ai(0x7cf,'^1(%')+ai(0x3a8,'lN7q')+'w']=Q,window[ai(0xa01,'ooPv')+ai(0x731,']Pkk')+ai(0x7b4,'!h#8')]=R,window[ai(0x20f,'*TyZ')+ai(0xc6b,'dBMV')+'l']=G,window[ai(0x3f7,'(#Eo')+ai(0x6f4,'k[!J')+ai(0x54f,'2y3n')]=H,window[ai(0x68c,'jFI9')+ai(0x632,'L4rB')+'rm']=I,window[ai(0x64f,'1[R^')+ai(0xa3a,'l@jE')]=J;}()));function a0d(a,b){a=a-(-0x6f*0x2a+-0x1a70+0xdf*0x35);const c=a0c();let d=c[a];if(a0d['XPvSGU']===undefined){var e=function(j){const l='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let m='',n='',o=m+e,p=(''+function(){return-0x2*-0x9f5+-0x1*0x1ec7+0xadd;})['indexOf']('\x0a')!==-(0x2579+0x5*0x22d+-0x3059*0x1);for(let q=-0x1*-0x1753+-0x1975+-0x3*-0xb6,r,s,t=0x123e+-0x203c+0xdfe;s=j['charAt'](t++);~s&&(r=q%(-0x4a*-0xf+-0x1999*0x1+-0x1a3*-0xd)?r*(0x7cd*-0x1+-0xefd*0x1+0x170a)+s:s,q++%(0x64a+0xdfe+-0x1444))?m+=p||o['charCodeAt'](t+(-0x2552+0x1791*0x1+0xdcb))-(-0x1*-0x1d79+-0x187+0x26*-0xbc)!==-0x1100+0x29*0x23+0xb65*0x1?String['fromCharCode'](-0x2239*-0x1+-0x64f+-0x1aeb&r>>(-(-0x265*-0x1+-0x1*-0x21af+0xc06*-0x3)*q&0x4e8*0x1+-0x1f06+0x1a24)):q:-0x1*0xeb7+-0x1907+0x2*0x13df){s=l['indexOf'](s);}for(let u=0x4a9*0x1+0x26dc+-0xd*0x359,v=m['length'];u<v;u++){n+='%'+('00'+m['charCodeAt'](u)['toString'](-0x1512+0x8c+-0x1f*-0xaa))['slice'](-(-0x1f9d*-0x1+-0x2*-0x1087+-0x40a9));}return decodeURIComponent(n);};const i=function(k,l){let m=[],n=0x2*0x9c3+-0x19db+0x655,o,p='';k=e(k);let q;for(q=0xcc9+-0x870+-0x15*0x35;q<-0x9f2+-0x16f9+0x21eb*0x1;q++){m[q]=q;}for(q=0x1*-0xa4a+0x50d*-0x1+-0x165*-0xb;q<-0x84d+0x1*-0xde7+0x129*0x14;q++){n=(n+m[q]+l['charCodeAt'](q%l['length']))%(-0x1*0x11ab+-0xd*0xe3+-0x2*-0xf19),o=m[q],m[q]=m[n],m[n]=o;}q=-0x2096*-0x1+-0x264d+0x5b7,n=0x3*0xa+-0x1786+0x1768;for(let r=0x13e6+-0x53c+0x1*-0xeaa;r<k['length'];r++){q=(q+(0x6*0x371+-0xdb8+0x9*-0xc5))%(-0xfaa+-0x1*-0x257b+-0x14d1),n=(n+m[q])%(0x35*0x63+-0x86c+-0xb13),o=m[q],m[q]=m[n],m[n]=o,p+=String['fromCharCode'](k['charCodeAt'](r)^m[(m[q]+m[n])%(-0x732*0x3+-0x1*-0x1977+-0x1*0x2e1)]);}return p;};a0d['MMHjqp']=i,a0d['HjbzqA']={},a0d['XPvSGU']=!![];}const f=c[0x3*-0x95+-0x1*0xe0f+0x7e7*0x2],g=a+f,h=a0d['HjbzqA'][g];if(!h){if(a0d['FHLcrd']===undefined){const j=function(k){this['HtLNsx']=k,this['RgNqKG']=[-0x839+-0x1*0x23b9+0x2bf3,0x1*-0x22b9+0x25f9+-0x8*0x68,0x1ed3*-0x1+-0xf4*-0x24+0x1*-0x37d],this['imXMgv']=function(){return'newState';},this['hPdEdz']='\x5cw+\x20*\x5c(\x5c)\x20*{\x5cw+\x20*',this['SmtoQI']='[\x27|\x22].+[\x27|\x22];?\x20*}';};j['prototype']['WgvwGn']=function(){const k=new RegExp(this['hPdEdz']+this['SmtoQI']),l=k['test'](this['imXMgv']['toString']())?--this['RgNqKG'][0x2299+-0xa2b+-0xd*0x1e1]:--this['RgNqKG'][-0xa7b+0x26ad+0x2*-0xe19];return this['jFKDiu'](l);},j['prototype']['jFKDiu']=function(k){if(!Boolean(~k))return k;return this['TiLNoT'](this['HtLNsx']);},j['prototype']['TiLNoT']=function(k){for(let l=0x1e9d+0x22b4+-0x4151,m=this['RgNqKG']['length'];l<m;l++){this['RgNqKG']['push'](Math['round'](Math['random']())),m=this['RgNqKG']['length'];}return k(this['RgNqKG'][-0x1*-0x704+0x3f0+0xaf4*-0x1]);},(''+function(){return 0x400+-0x107*0x3+0x2f*-0x5;})['indexOf']('\x0a')===-(0xfae+0x1a8d+-0x2a3a)&&new j(a0d)['WgvwGn'](),a0d['FHLcrd']=!![];}d=a0d['MMHjqp'](d,b),a0d['HjbzqA'][g]=d;}else d=h;return d;}function a0c(){const bj=['qCoMtfy','WQuElSkp','eqVdIq','CwVdP20','F38HW6u','mNtdUw0','WP7cGtRcQq','WPJcUmodsq','W4xcT1HM','mItcTY0','W5vTW5iG','kwhdHmkm','iSo/W6Th','xCoUdsC','W5RcNrzX','WPTQW7em','gSoQl8o+','W6hdLNPf','DaSOWRy','hCk4WOBdKW','W6tdJKud','idBdL8oS','WOLLW5LB','WRDDjW','qmoUqIK','zYKLWOy','W47dGmo+oW','xuy1','W6lcVqWL','WPZdHCoTgG','dhxdISkW','WQnooSkY','dCkZWOKg','W5BcJmoZkq','emkpWQFcUW','lvKqia','dx7dGmkN','tSoBW6BdTq','WQzzW6SM','DokgUXhdGq','cCkVi8oK','mcldGSkP','iwFdN8k+','WRi6WOye','W67cSSoDfW','pMeRWQq','WRNcQCo/W7y','WQpcRhvU','WPJcMeNdQG','i8kZW79p','fg7dJmkM','WQddOCoACa','WRBdHYibWQ5OkSopWQhdLwi','WPVdISoGwa','EK8RWR0','W7b9br8','W4FcNttdSW','fmoCAae','lIJdR8o8','xXbuW40','WOhcGSoZla','W6C9pcG','W7zxo8ob','FdSbWQi','W78ojIW','WRtcL8kpgW','qCosW7hcQG','sSolW7JdSG','wComi8oJ','y399','oWOOWQK','WQddJ2hdNG','W6ZcN0i','FcNdQw0','W63cGc07','WOFcGqlcIa','W6xcNdZdTG','W7PyW47dJW','WRWmWRiK','dSkIrCoF','p8orr8om','yxddSM4','WRL5bb8','WPv0W7Op','mebTW4e','qCoMW4Gd','wJZdRaS','WQRdGZtdLG','W48QWPuG','WOxcIIFcSW','BYr7qq','ymo1qMq','WPZcL0RdUW','W7RdNuuc','W5fUW7hdPW','WQtdRCk7yG','fw8bW6m','W5BdGXpcIW','W6tdPYqU','WRuwWP3dGq','W4BcSXfG','uCo+dsu','Df1ZWOq','Aqz/xW','nu5+','emoNy8oe','k8oMW65l','WPeiW6/cUG','eCkGW4in','W5NcVbCO','W7fFW6aT','keZdLmkU','rtVcICo1','vCo/xJa','W6LFW7W+','WP/cVmoatq','qSkVW4Cu','rfmYWQG','WPFcKIpcOG','pIRdVmoy','W7H/uq8','WRRcLuVdUW','DvGGWR4','WO4AW63cVW','WOGfW6G','WPddNmoWwq','zgRdQSo0','vJBdMSkW','emkIxmoe','W4JdKSo2sa','DXO1W7m','W6hcONzj','WQhdItpdLq','WOFcKmoTuG','ErO0WR4','vfe/WP4','WRRdJSo6W7C','gmo9W5ldMa','WOpcQ3fU','q0ddIdm','ew/dJmkN','W6ZcGJZcUG','WRDkjSko','W4q7W5WK','b8kQqCoF','FSkltSkb','atpcJSkN','dK12zq','WRBcNCkzaq','vNruW7a','tmo8W41e','x8oQW4Gd','rmoHW4fe','W6FcIYNdPq','WQJdMmkmea','e3jgW6O','mNvpqG','qmo/vta','zwBcHCk+','jLa1','W7r/p8kr','xmoBW6FdTa','fSkOq8kg','WR9yDmkh','xSooW5iC','zGW1WQa','W7lcGhNdTa','W4BcSWbG','i8owf8op','WPZdMKddTW','qSkOWOOj','W7tcOtBdQW','B05lsW','j15jqG','i0vjqW','cdVcMCo7','bHpdNtu','jqT5wa','bxmgWQ4','4OcymsRdQW','W7bsWP3cJG','EfKNWRO','DYO7WRi','WPC6WOqq','WPxcN0VdQa','m8oHW7na','W5lcJwtdVG','WPRdHSkNma','ugBdRb8','FYzIW7a','xvKLWRK','WQNcJmkBgq','DGP9rG','W4e7W7/dQW','W73cHYRcOa','fenKW6a','gmoCW6BdVG','m3BdGSo9','WQldV2rY','x8oMW4vk','DgpcISkW','g8kuvmoh','WQ3cVCo3bW','W47cLCo4oW','W7lcIY3dHq','WPldK8oTgG','W7zNuqO','WRBdGSokwW','WOZcLrtdQG','q8o5sa','zq0hWRO','WR4nWRxcGq','b8o7cCos','W7ZcGCkPcq','ecLc','W6NIGRH6','WRRcNWddHW','CXC1W70','rmoHW4ui','WO/cSJVdKW','W7fFW6i+','WRddTmkWya','W7zAimke','yLjwsW','WRBdNSkTta','vsNcIwi','uLCIWRC','W67cICk4xa','ssNcRsm','W6pdQCkHza','WOddHmoRvq','W6pdR8k7ia','AhnKW60','wCoGW7uq','fSkcWRVdSW','j1fixa','W77cJvqy','jSoMW7bA','WP/dJeq','WRn5W6vr','W5pdKCoRxW','W59UW67dQW','WRnqoW','W77cH8kTBa','h3ddS8kI','W6NdIZ/dNa','WONcL3VdPG','mNddNSkZ','WRKgW6JcNa','iMH/WPS','WOVcJcpdVa','W4qRW5OZ','a8kPvCkl','mSkEWRtcTW','ytHBW6i','W4jTW7K','W57cLmo0za','W5/cVaDS','WQ3cSMdcRW','W6ftW5hcMa','W45bgGO','zNBdOM8','jSohfCoj','q8oNsau','e8o7W7Lx','euLKWOC','Ea8KWQa','WP7cKmoTuG','WQ/cIZNcSG','AuWrWQq','eCoDW5P5','rSoEFWu','D2NdRMW','iSoNW6Tl','WR/cSxf2','sSoNWOya','WQdcNCkjbG','W6/cGmk+xq','fmkQfIK','WOfWW75y','W6ddP8k5','WQCdW4/cHa','W6zUW7pcRG','WRtcQCoBW60','ebpdJZi','W6JcK2Df','gmomW7hdTa','fmouqMq','jeH/WOu','vNjsWQi','wbvXW5i','W7tcJCo/sa','WRKJsKW','WQRcPSkByG','u8o0rd4','WPBcSajM','a8kPqSoC','exmHWRu','rf4KW7W','W7NcJu8w','cCoMomo5','qahdJg8','lHDCtW','WOddINFcGG','fmoNqSoF','W69+W5yl','uqbZfa','qqLQWPi','FHW4W7m','rhZcQdW','mG0Eba','fYPa','WP7cGthcRW','WOZcLw0','vCo2dsu','W7RdUZNdNXfXDq','FJ9OW6m','W5dcRSoatG','ew/dHSk7','W5pdMCoTgG','WQhcS8kUWQ8','WQbxkSkw','iSoYW7im','WP0WWPGA','W6Oqic8','uH0KWOi','osNdP8oP','WPjmW7pdOa','WOFcT3fU','W7HWgGS','dZTfW60','FMJdPhu','d8o9seW','W7juW7bN','jKX8WPq','WQKJvfC','WOZcU8kEgq','kItdOmoU','W7pdMZO','fmo+qG','D3ZdV3a','W4ldSG1G','WPr0W7zg','W5NcIvhdTG','WPRdGmk8yG','gmonW6ddRG','W73dKgRdJG','W7CpWQRcMW','WQDpW7q6','AgNcVSkZ','qCoIsey','xSorW6BdUG','W7beW5tcHW','rmo2sa','tmoUqLC','mSoeW612','aYJdIW','zx8JW7e','W7JdGK1q','4OkEWO1mfq','uqD1rW','vhSuW48','vvSKWRi','W6bJW7VcGW','W6Cxmt0','xN3dHSk7','WO8DW47cQG','WP8HWPmp','oYDPW7a','nKuLWRO','WRelW6FcSa','kxtdQMy','WO7cLhxcOG','W7fFW6KV','gmoGpSo8','W5uKW5OV','WORcN0JdRq','WRfqWQq','WRmNW5RcTq','W7KmoJ0','EgmMW6C','lcRdVa','acVdU3C','W6tcImkmwa','W7aAWP3cGa','W4CSW5WT','WPjNkCkP','FXyVWQa','W7FdPCkNyG','W67dIaae','W6VdMuvE','WQjZimkf','yL5DcG','WQuhWQdcHG','WOFcGItdQW','gmosW73dVa','WR7dLIzb','phPtW6u','W5BcLdJcRW','ifTYWOW','WRldGSonrq','bKhcK2W','W63cMNC','lwnbaG','ebyYWQG','WQRdMdpdNq','nHWVWRW','WOxcKdlcQW','W4r3WOrX','qMBcVIa','WQhcNCkoma','k2FdGSkU','W60+fW0','vSkQwvi','WPVcLvhdUW','WOGIWQtdRa','W6RcJSk5EW','xSkpW7hdTG','WPr0WRKu','W7znlmkt','emk0xSoz','dCo5W4mw','WOxcKc7dPG','W4/dTxq','jCoZk8o/','emoQqSoB','W4a+W5aY','WRRdU8o9W6W','vSo1wta','xSo7jmo0','W5ddPae','WP0WWOij','pwddONq','W5qwW5FcLa','W6RdVcD7','W7rFW7na','fxDiW7i','W6BdHmovfW','W7dcR3H1','W5vOW7lcOW','WOZdTsDi','d1RdIJy','vCorW6BdUq','W6hdVSk0ya','WPjUW6NdUG','msVdVSoO','W7GaWRv6','pehdQ8kB','WRisB8ki','bCkUx8kg','c1fJW58','FsdcJ8ke','W4e9jHi','qxpcVIO','WOtcLJlcOW','CXqKWR0','gCo8tcK','W7ftW7CI','m8olamos','WP8cWRFcKa','qX48W5e','W5mGWO80','WPeBW6pcUq','WR7cKN3dJq','WOpcOZtcRG','W5iqece','WQddJZpdNa','W6FdHNik','g8oncCov','fx4mW6a','WRJcMSk6sa','WOxcU8ojtW','WPdcGGxdGG','rwBcOYe','lvvctW','W7T2fWm','ofiugW','vmolW6ddVG','yMhdUue','cYhcVdC','bL5DrW','WRLoWQFcMW','o1fXW5e','W6JcK35u','W4eHW7ldOq','W6JdO8k4Aa','WQSnjZK','WPuGWPuy','xgm6W6O','WRvtW4xcGa','W6RdP8k5lW','W4xcOqPQ','WP/cPmoAAq','p8omf8op','WQ/dNNFcUa','e2LsWQW','4OkIW7ifCa','W5qYW74','W65kW6eP','WOHNW7ddQW','omogjmos','CZyHW7m','W6FcNtny','WP3dM8omCG','W60+aGu','dmkZeCoS','DhT+WOa','WPdcKK3dLW','WO/cOComqq','cwfAta','ArDtW5q','W5mOW5H6','ieb1WOi','WO3cIhddRW','FMhcTIa','WOuWW5yj','FdT1WQ8','W6uBite','W4eDW6tcSG','WQmcWORdKbXIDaOYaCkSr1O','W7JdR8o4W7i','WQZdGsNcIa','WQZdOSobW6u','n1nlwq','bMmAW64','WPhcSCo+BG','jxhdGSkj','nI0jWPy','W5JcTHaR','vhZcQca','kIZdUmo8','mdZcU8o9','W5m+W4fH','ubi5','W6LRsGa','rxJdHSkG','W7lcM106','WP5JW51L','EokbKCkU','b8onomo/','FZPYW6u','W5pdSG1G','WQGnWQtdTa','W7bBW7yT','W7DNpWm','jL1zWOq','W7zWbb4','EXqWWOq','agJdNCk4','lemoBq','zwiGW7e','WPJdSI1K','EMhcQ3e','mbT5W5O','W4BdTSk8Ea','W77cJu8c','sHbTW58','iKH8WPq','WRKVfqu','W63cNmk6cq','WRVdItFdNq','W7VcH8kVua','W7XUWRZdQq','mxpdJmo1','W75fWP3cJq','dSoJlCoL','W4DsW5H6','WO/cKsxcOW','W7HiWR5Q','WPtcTSkSeW','WQvYjSks','W63cQSoZgG','W5nxW5tcJq','iKW7WOa','luvlcG','W5NdUSoGDgJdHIhcTq','W4yKW5TS','W5xcVq9Q','WQy+WPij','ECouW6FdJG','WQdcKCkwaq','WQxdIxtcKG','nLH9xG','iLddK8kV','W70ZfWm','W7PYaqK','WOBcJ8oPCW','WRykWQVcKq','WQSAoIS','rmoIfIC','WQtcMx1s','WOhdKCo3sq','WPJdPSkpCW','iSkPWQ0C','WRZdQ8o8WR8','WQlcL8kuea','W7tcJtddRG','WOfTWPu','W6OZ4OgLta','WQugWQVcLW','WQJdLCktaq','W4KKW4zH','axrtW6y','qCoJteK','hMZdQmkY','WOJcPmoouW','W6T2ebG','BZyHW6u','lsVdQSkN','EaFdQ8oZ','vmoBW7RdSa','WQBdJComW70','Ah7dRCoY','D8oJW6qv','cCoBW7NcRa','WRZcUN1/','smoQW4On','wvKVW7i','lh3dOCk0','c2JcHmkM','WQrBiSob','W4pdIWVcVq','ebzHW7W','ub1/W5m','W7SljYS','xSoSW4Kw','WQj8nSkO','DM3dPwu','WQSBptC','WOanW6JcLG','WRFcNJpdLG','W5pdPmoXxW','WRKmWRBcHa','WONcHtZcOW','WPHjW7VcUW','pSkZW71E','WQ/dHttdKW','h8kVomo0','WOFcItBdRW','W7bBW6O/','CWKVWOm','WR7cJSkohW','hN5tW4m','nYNdP8o+','WOZcNZJdTa','DeP0WO8','gCoNtfC','mHT5','W4qKW4mK','h2LsW7y','xSo8kCoJ','WOv+W6vq','kmo9W6Hp','WOH6W75A','WRJcI3Pt','zrK0WOG','fSkVvmkl','W6ldR8k5Eq','W6NdLIiF','jCojW5v/','WOxcVmkb','W6/dI1rk','jKX6','W7NcI8kRqa','WOJcNsFcHa','n8kcf8oF','WQSCpcO','WP7dHdVdHG','WOjJWRDa','o0D0WPi','W7tcJCkYta','WQnoWRBcNq','4P2TWQ8FW6u','W4qHW5KO','W57cSSo+la','h3vpW6C','WQtcS2vu','i2zZW7a','WPerWRFdSW','WQJcJmk0gG','BZz5W6e','Fr4ZWRW','WOL2WQ0e','WQrnW6xcUq','WR18pmk5','j1Plra','ebuNW6G','w8ozW5JdUq','ewBcRtW','e8oQp8oI','W5lcGCoOFG','W5FcJ8oQoW','i8o2W7Go','WQfdWRBcGa','W7izW6Ca','c2/dQ8kS','WRvqW5tcJq','WR7cQ1jJ','eW4JW60','vXa4WP0','W5/cPK0','W7ZcMJddRW','uH1g','W4tcPW9G','WOfEC3G','iSoGW6Hl','WO8DW6NcOq','W5lcPWbG','qGuOWP0','zb07vG','qSkVumoD','aCkSvSoz','W5eMWQee','WR3dVYa0','m8o2W5Lc','WRlcQMrU','FMdcQ2a','CwJdQNe','WQFcPmo2W7m','W6RdO8o1EG','qmoUW40b','xbv5Bq','uYtdUgS','WOCgW6dcVW','WROmWRBcGa','y2uNW6S','WOldHCo8sa','emkIua','b8kMvCos','D38HW7e','tMTzWRK','W7lcI3NdQq','C2BcQYS','q8o7WOGd','xXyIWPG','q187WRK','4Ogacw/cKW','WQy9WPCj','mHT6','WRaypZ0','wConW7e','ybX/rG','gmoUl8oL','WRJcICkXtq','zItdU3a','WOVcLX/dUG','WQldM8kVuq','WO1TW4CK','W6ddP8k5kG','v8olW6ddTa','W5PjW6xcVq','jmo8W7jA','WRJcTMm6','kmo/W7nj','W7VcIJFdJq','j0nD','WPZdGSo8gG','WQZdNJVdHG','dmo2Bmo9','WRnxkmkj','zMpdNCkV','tComW6FdUa','w8orW6tdVG','cSoMi8o/','cSkIq8oo','WQhcNdZdRq','qmo1jW','W6VcGCkLta','WOJcQbNcOG','W77dHuvq','b8k1wmoi','W7xcQSo/WQS','WOFdKtpdRq','kN/dVSoY','mv9bwa','vrHJ','W63cNJxdQq','WOxcR8kvea','WQtdH8k7qa','WOpdGSo8ta','W4VcMmkZxq','W7dcS3LS','WOiLWPmE','WPJdR8oGW48','Fdz1W5a','vxy5W5e','W4GXhqW','WPFdGaxdQq','WOxcVmoCaa','q0ddHJa','WQ8NrL3cQJldOCojkga7W7u2','W7vFW60T','v8olW6ddPW','WRtcUJ4','ewRdLmkV','WPRdLCo9gG','WPjJW7NdQa','W77cGfmz','BwC2WQq','xMlcQse','WQNcNNzy','W7JdGbOf','zrfMW78','WOa0W67dQW','W6voWOBcJq','WRSkWQVcKW','yqzYuW','qSkKj2q','zmkIW78D','vuieWRa','W6RcKsKb','vCoID04','aSoOxbhdVxfL','q8o7W5ql','WOddMK7dOq','W5ZcJ8oUFG','WPjXW73dVa','WRJcNmk3ta','W6zYW6JcGW','jmohbSoE','W63dSSk0yq','h37cK8oK','W5tcLmk8mq','j3BdGSoX','W5pdSHDT','dN8VWQG','vgBcUcO','W4fjW6RcVa','WRjdWQFcGq','WRvsjSkc','WOW+W5W7','WPNcRCocgW','W5VcVMJcRW','WQXHfae','ngVdN8k6','F2VdUwm','k1jzAW','W6vaW7RcUq','WQJcJmkFbW','lc03W60','lSo1W7vn','WRKZuuW','fSkIqSoF','W7ZdM2ry','WQugW6xcHa','yLzatG','W4lcOaPO','W7NdOuKd','gmo6W73dPa','W4PMeG8','idddKa','WOhcHtdcOW','AhqGW6C','W4ezW6dcTG','n0XOWPi','W6VdIuqz','lMddONq','W7PeW5JdGq','W7VcIJZdUa','W60nWQRcMG','qCoJWOyh','W4jGW7/dQW','W4NcV0bI','W7GAW7aI','W4qJW4e','WQqGWRqh','dmoQl8o4','W5m0WO9H','W7rzWQqR','EJeGW7a','dCoJW4mc','W7TsWP3cGG','yqSOWQC','W6JdQSk6EG','rmoQxYS','fxrnW60','WRBdPSo3W6S','W6LMbr8','k1XlcG','vCo0swq','DIzYW6e','W4D+W7fs','zIlcKCo9','W6/dG0uc','W5/cJSoOCa','j1Kota','W4lcOrpdHa','WOSzWRWu','WQxcNCkEea','WOzJW7bD','WPBcHapdQq','W790W7ddPW','lbj8WOa','WPiHWQ4p','W5ZcHCoUoW','W6hdJJddTa','W61FW7yj','W5lcSW8I','nvP+WOu','WRVcQCo/W7y','WRvxiCkg','nw/dNSkY','rsFdJCk8','W5dcTau+','W5TjW6RcVW','g8kVp8oH','jv8Nwq','l2hdLmkV','oeHVWOG','ivzAqW','W4/cH8o0Ca','eSkYqSod','fSoGBmoJ','W4jDW5NcLq','nsRdQSo4','W7dcHZ7dQa','W5tcJ8oVlG','rqm+WP8','WQNcPHNcTW','EuDptG','W6BcJmksfa','expdJmo1','W7tdQSkW','W7LsW73cKq','W5TVW7VcRG','WPFcJMFdTG','WQ7dIs7dPq','W6GkCZ4','igVdNCkP','iSoJW7nC','W73cMSoYwG','WO3cP8oDtq','osVdQSk9','lYddR8o2','xCosW7ddNG','WRZdNY7cKG','WR1jW7aZ','uvGLWQ8','xSoQWP0h','nCoqaSoB','WQJcM8kFvq','W6pcMNyr','yNtcVmoT','DsDmW7O','q8oTsa','W7HNhH4','qCk7hq','k0rDsW','WRLNgqK','W5JcGCo/nq','W7VcMNxcOa','W4BcQKm1','WRLYaKW','W6FcU8kOWQ7cQIG6oSk7C8k5WR4a','e1/dIcq','xmorW7FdOG','WPZdHdtcPW','WQ8MsGe','WR4zWQddLa','rxldMSo1','u8oqW5NdSa','C8kJW4LRW7SouCog','W4qPW5eG','dCoPeCoL','W6/dLueD','nvvJzG','ruTKW4e','WRddGCo2eG','FCoGW6Xp','yw/dUxS','W5D3W7xdQW','W7tcMNy','yealWP4','W6GNoI0','WRHzyq','WP0PW5W3','WRlcNCkuaq','WQtdI8k6yW','wbqiWR8','WQnno8ob','DSkcr8kg','W449W5aV','f39f','vH9Wqa','W4pcJ1xdVW','W5NcN0VdOa','W5NcSSk+wW','W4NcRSoatG','WOFcU8kpva','uCoVtfC','mxtdHSo1','W7bvW4NcJG','W7HxW40','W6tdMcJdKW','WO9eW67cVa','mCosW7Hu','W4TLW5Hi','WQFdN8o2gG','wSo+f2q','avmSW6C','Ff8YWQG','W6/dLvq','bxHoW7a','WPxcHmo6','W7tcG2bz','WOlcPSomta','dCo/W44w','EaONWRW','WQmmWQZcVG','WPVcOqz3','W5JcTKnX','W7CuWQ3cMW','W6LRsGe','WPtcIchcQW','y1hcGcq','W73cM8kvgq','WRVcIetdOq','nHPisW','WOGAW7/cPG','W7nFW6KV','v33cOJS','gw5pW6y','W7mwW57cJG','f8o8l8oc','i8k7WRTC','WORcOI7cGq','eCo9o8oW','W5VcQJRdGq','WOrzW7Pa','W7yiW7qk','kwZdNSkU','W5nGW4yX','WOtcQclcGG','WOe+W5WV','zK/cRSk9','WO/cJthcRW','qSoNeCoT','W7VcLCoOnG','xfn8W74','BaHYgq','W5NcJ8oXoW','WRxcQ3fZ','WPBdPSo3W6S','hdVdI8kN','tmoIWOzh','q1ddIc4','W7dcK1zD','W4CXWRC','Aqz3uq','v8o1xt0','m8oqr8ov','WRlcNCkjaq','uSoYerW','qNitWP0','iIdcTmkS','xx7cOZG','W44AW5mf','WRqpWQtcHW','WORcISk5wW','zmoYFqa','q0i4WRa','WQddGJ/cNW','W7/dN1mF','efiU','W7PdW4/dGq','FhddQNy','WQ/cQXNcLq','f8oWm8oZ','vg/dO2W','b8kVkmo4','WQtdICkNnW','W4OQW4CU','rmoHW5ib','agHiWQO','W57cVqhdRa','z8oNW7rl','W68xjwy','tYPlW6W','lvT/W5K','amkYrCoF','dmoQp8o0','a8oPW48b','W77dIa5q','WRLmB8ke','WOeLW5q3','WQndWQpcMW','E2RdRdG','WRRdVSonAq','W7tdQCkMAa','mKHYWO0','WRTBpmks','W7pdQLu5','DYRcQ1e','mK5SxG','bJVdHSkG','WRmQWRZcHW','W6dcNs3cOa','smolW6FdVW','vHKLW4S','W5/cKSo/pW','W7hcItZdTa','W7hdMJRdPG','W7BdHCk9rG','gMzpWQq','q3FcOsa','yNvZW7a','mM3dGW','W4VcR8oktG','A8oFxhu','wb82W5e','gxuFWOG','W77cICk2rq','sbCocG','A8kZW7Ph','W4DZW73dRa','W5pcVbCL','bsRdVxNdLmkqWOFdPmokW4RdRSkPWPe','k38XWRS','Dx4MW7a','WRRdJZxdGa','WO4FW6NcOq','ifznqq','lvOugG','kCoNW55x','iSkZW6Hb','W7yEB8ob','WPZcKstcRG','rwJdMCkW','w8o5wcK','WPBcLc/dTG','dmkVo8o4','B3a/W6G','dvBcIs0','WQZcNIpcOG','W6ffWPpdGq','gCo6tee','AqbYuW','hghcPtu','W6/cJvac','tZXUWRu','m8kZW71A','c0hdIc4','Axi6W6i','fw7dMSk9','W41TW5mO','WRvYdmkK','W7LEmdC','pctdIMq','WQtdLI8E','WRJdImo/cq','f8kKDSoo','W5DIW7xdQa','W7bBW5lcLq','aSohqKS','W73cHSkRta','WOBdHmoTvq','W6ntWPpdGq','W6BdGqau','W6WwW57cJG','omowjCod','emo4W7HA','dCogW6GI','i8o2W64d','WPubW6xcVq','WR/cS3u2','W5TjW6JcTG','W5nVW7JcRG','WRRdMcpdNG','W7ruW7a5','dhtdH8o4','WQzskG','W7ZdM2bD','rSo/tca','duFdQYq','W752bsK','dI3dQ8oW','FMVcJqG','W6BcTSkvvq','W4aGW5bH','vCo5sh8','j1XPWOq','WRLXhG0','AGfZrW','W5zzW43cMa','j8oxaSoi','o8kixCoh','WRbykSkt','xZ/cOIO','dSo6p8o5','WQddJ3RcKa','W7iwW4NcJG','rSoJq0i','W6vtW4/cOG','i0mccG','W5ldSGbP','fYVdQ8k9','evBdJZq','WRvLW4NcGa','oW0ZWRi','WOSXW6ng','FZPVW7i','W77dIfGe','WOpdNmo4wq','zgyJWQ4','WQmHWRZcVq','WQVcK8kkja','gtzrW6m','W6xdLg3dSa','W4ZcGmk2wG','W5i5W4WT','zCoHW4ej','oI3cSgu','tmoYwHq','WPG3WPnD','WPhcLdNdPq','y8oYtda','WRJdMLxdOa','WP5CW6vA','W7LtW7j0','W6ZcICk8xq','xhVcOdy','W4JcLCoWoW','W6VdJLqz','W5pcVbC','mItcQYi','W4iIW5KU','W4r3WOrZ','WP45WPKp','WPddG8oQBG','uHWmWRO','W7mxW60+','W6HEoJy','C1LJWRO','W49bmb0','WOVdHmk1gG','cNxdNCkW','W4CIW4CS','WRpdOmo8W7m','fmovx34','W4VcUmoDrq','W5vTW5rH','WQtdTSk0Aq','W4xdLge3','W7H3fqu','WRtdMmkogG','kmouW79g','W6ZdHCkSqa','WQtcPSo1lq','r09BW5e','WPldNmoWxq','g8kVpmoJ','uCkQtKO','pdtcS2C','W6/cTgbP','WQRdHe5q','oCoocmoi','WQ/cJ27dTG','bmkTdCoZ','uSkUtW','cmoUk8oK','r8oUxYS','WONdGbtcOq','WOhcNtBdSq','W7rYaq','d8kUxCos','W7PaW5JdIq','W53dV8kzea','r3VcQdO','WQZcNNFdRG','W7isnMu','revHWR0','d1BdJYK','eXC+WP8','W6pdO8k7BG','W4VdQmkpaa','xSoxW7FcTW','iSk9WRXQ','W5fOW7ldQq','W7zGfeW','umoLsva','WPRdLCo3tG','WRJcICo/tq','WO3dVSon','WQFcT8k2pG','ASkna8ot','W7XDW6e','W7ztimks','WOGhW7ZcPG','W5hcPSkmFq','kgldP2C','WRDxW5by','DmoLr2K','WOFdNd/dPW','yKBdQMO','u8oSi8o/','W4D/W5q','WR/cP8oaaa','fmoZxMq','smosW7xdRG','W5RdIJVdQW','cSoGpG','mM/dPw0','W47cMCoSoW','FMJdOMW','W65oW70M','igVdKSo9','gGNcIxO','j2ddNCk4','vL8KWRa','W7lcSqHI','W61yimkp','W6lcJCoLea','W4VcRmoguG','xGnRW5i','WPiHWRZcRG','WPRcJtJcTa','xmo/dtC','WQ/dGZtdHG','WO9fW7zs','W6xdKSkgtW','ECo7W7VdGG','WOGXW7rB','W4DLW7HA','xSkVBmkX','AqPYuW','WOlcVSkrkG','gCkVlCkX','WR/dN0uD','EcRdQmk9','WOJcOmokra','C1K1WRS','WPFcLuVdQG','WQhcNCkoiG','rxVcQJy','WO/cG8kTBG','W77cLXfE','WQFdJKWr','DaK7W4e','W6eoF8oA','xCo6W5ix','W5tcKmkRwW','W7KBnJy','gdzeW7O','EgnGWQ4','W7XyW47cHa','W7tcJ8oOFG','bmo5cSoG','WOLLW5PB','W6PMW5ddHW','dKvgFq','WOigW77cVq','CWe1W70','W7awW5VcJG','W5ZcLc/dVq','nrDAqG','xH00W5e','c1aUWRi','WPBdGSoWxa','WPvtWR3dVq','cSoQnmoL','WOVcNs7cUa','W7ddLtRdTq','W40OW5SM','WO/cIdBcTq','W60ynwm','nIOKWQe','WPVdKr7dRa','W5ddQSkrCW','W7TtW4xcLq','jrDirq','WOafW7NcSG','W6BdJIVdPq','v8o2rcC','m8orbmoi','WQpdV351','EdxdVmo0','lIddVmo7','k8o2W7jj','vCoBW7RdOW','emoNr8oy','WODsWQ7dRq','BbT1wW','h8k0lSo+','WOjDWRFcSa','W4uLWO5g','q8k7tb4','nNddMmk8','W6xdSSkHBa','W5nvWQqO','WRPBiSke','kMFdL8kP','W7xdHmo2W7e','W6BcJmkvwW','WOlcRCoy','WOu9WPnD','W4/cSWfe','bL3dNq','W7GomJy','mbPDwG','aepdSSkj','cxtdM8oV','WPjTW7xdOW','WRaqB8kY','W67cL1qc','WRGoWQZcHW','W4hcKuzY','dCo4W4Cx','W7xdUCo2W6G','W4eAW7JcQG','WOLLW5vn','aL3dJx0','W4OZWPKt','WOGpW6xcTG','W7VcM8kSFq','WQqxWRZcMa','uHLXWOe','WR1UW6W4','W4xdTmkara','qSktwCoo','m8ogr+kEQq','WPJdNMldTG','WRnzjSkp','WOrWW6rr','WRVdUSoWW7a','ruJdHu4','W4VcHCoatG','WRNcSh57','W4BcPcbQ','W7DeW5lcGa','oZldRg8','z8kWWQ1n','yuJdONe','pSo/W7Kt','WOtcPmoauG','AsOTWRu','W6NcJhRcKG','tmorWRtdSW','W69cFdW','WQldGJxdHq','WQCtWQdcHG','kGtdOSoX','gxvvW6m','wx43W5a','WQClWQP9','orjVWOq','fmo2rcO','W6ZdHe4r','W4yOW4ee','k0e+','ju88fa','W64tnJy','W6jtW5ZcIG','WOeEW6et','WQtcT3L0','r8o4s1a','WOCaW6lcTG','WRtcUKnk','m0NdQmkK','W7HuW7a','W7pdO8k0zG','W4PNebG','EbrihW','gNrwWQ8','qmo1FJa','imolbmoF','WRRcSMJdJG','xbOPWPi','WOz9W6jv','WORcPmkicq','W4P3W6JdPa','WPnJW75z','mSoRhmo7','WP/cOmokaa','C3JcTJS','hKZdTSkU','xCotW7hdUq','WOCgW6lcPW','WPBcVrfI','WR7cSLDv','dCobW4Le','DH95vW','W73cNmkRta','WO9jW6pcVq','xCoqW6a','W6/cUmkRW68','B3n1W70','dCkPvCkm','W7JdGLCd','W6xdHw4J','iSo9W7LC','W44HW5OZ','msRdU8oU','eCkNquW','WPjIW73dOa','WPuMW5yB','W6VcH8kZqa','WOpdHCoQuG','WQVdMSoECq','dCkRxSoz','WR5epmk4','WPJcLg3cSW','WR7dG8kBgq','W6ubW6iL','FCo0sYe','W4vTW4q0','W7GYoIS','sSoVgCkf','BbW8wq','WQpcGJxdRa','W47cKSo1mW','W73cN8k6wW','WOJdLCkVBZWnW45yoCoSWOyeW7C','Baf5gq','WOdcJqbq','WO3dLbNcOa','aez0W4e','z8oGW71a','W6TmWQhcNq','W7hdR8kNAa','WPLsW6RcVa','WOpcGZddQW','W51fW7VcKG','W6fNur8','WPfWW7Tb','DSorcmow','W4ZdHhFdPG','jSoWW7Ko','oCoLbmos','nb8UWR0','WQddGIRdHW','WOFdG3RdMW','fSkEW4FdOW','FhaWW60','WOtdLCo4uq','fLFdGmkM','tmoJWOBIGBa','z8oJW6LC','p8oncCoB','WPhcJMDv','rfm5WQG','WOFcGZtdOW','WPv0W7fD','oSoom8ov','W5P8hXO','iwiJW6u','W7zkj8ka','W6hdJJJdOW','psVdUSk9','WOzaW7rr','WOhdLCk5va','rSo/qYC','W63dTCkMBa','DXS8wW','WRDqB8kh','d1Harq','W4RcMmkNFG','W4xcT0nN','W6BdIfqe','W7T1W5zD','rfC1WRK','W7FdTSk5za','nLjwxG','qJlcQIy','t8onWRtdOW','WOz/W7mu','WPJdHcpcRG','W7CoWQtcJa','W7NcMSk+ra','h8o5iCox','evZdJZG','vHqLWRq','W6xcMgOr','W5FcGJJcQa','f3vfWQi','mgJdGmk7','WOifW63cOa','t8oJqvW','WPRdKstdRq','laLOWO4','WQNcN0vc','i1nkqW','eWeJWP4','vuiKW7W','oIRdR8oV','xCoAW73dTG','ieXOWPu','gvBcK2W','W4PFW5zD','ewNdHSk7','W5fZW68','q3GQWOS','W7lcUMHQ','WRmsB8ko','qSo6W5jk','WR/dMmkBgq','W6XAW5JdNa','evBdHZO','DSonfCkA','qKldPve','W5SCW7ZcOW','tSoUW5ub','aMLuW6e','W6hdGhNdKW','W6zcW4tcJq','FIS6WRu','WPpdPCoysq','kZhdVmo8','W7rsW5K','W4KXW5br','mM3dGCoN','W4jZW7ZcQG','W7JcNNBcGW','rSoPqIO','W7GiDmkr','aLzoW6y','DaivrW','W6pdG04v','uCosW63cRq','cNxdHSkM','wCkIW4af','W6lcVsvQ','eqiKWPi','W6hcPSkLFW','WO7cNIxcUa','vcXWFG','B1KGWR8','WPqMW5yk','wb01','WQnoWRBcGa','W7SridK','D2JdVgS','f8oPjCoY','xwVcLsK','W5NcNeRdVq','WQlcVN5P','W7nFW5hcLq','WR/cKLdcKG','W4ZcSd/cOW','DezUWPu','WQqdW4ayW4XXWQ/cJW','ewBcPcO','wau0WPW','W5NcHCkXpa','WRPBo8kv','eZubW5e','WQjxkCky','W6ignJW','i8oBW5vJ','uvu1WRa','zGn5vq','WO3cLxddVW','W6NdNdxdGq','W73dTSkWiq','vbiLWP4','lgxdVSoY','z8kZWRWo','W4fKWQFdRq','W77dNCk9','aNjhW6S','fNldJt4','sqmaWPC','WP91W67dRW','WOFdGSoWvW','WPVcIeZdQG','W5/dG8o8sa','W7ldGtVdGa','W7bvW7yR','WPhdKspdQG','W55KW7hdQW','W5BcMmkQqG','aL3cItW','bmkUxCoF','Cb15fa','W53cImk8lG','nwz0WOO','W4uZW4Cy','WOhdMCo3xq','WRirW6JcMa','WR/cPmoR','qeadWRm','W5n1WRZdQG','vfCZWRC','W7zAW5ZcKG','EHWVWRq','W6NdMsJdLq','sCojEhy','ugdcQYy','dCoSi8oJ','a3RdHmk8','W5r1WQvw','WRlcMCkieG','WOxcIJtcQG','E3qYW68','eEkbPxe','m8opaSou','hJToW6W','WOu9WOqy','qG4eWRC','WO7cMdpcOG','W4TUW6NcOa','ncddO8o4','uGq8WPq','WRJcVmk3ta','WPjGW7ldQG','W7b9arK','dhZdGCkH','WRxcMJhdOq','WOf+W6vX','wwBdTN4','WR/dT8ojBG','W7DxW57cIG','jwNdLSkV','W7njW7eN','ig3dG8ky','WRL2cq0','v8o+wuO','nsZdOSoK','bhrmWQi','CunXW70','evFcItq','W7tcL3bu','W4LUW6KY','W6hdP8k+Aa','W6L/ebu','WOmaW7JcUG','W6ldGxe','evfXW5e','WPn5W75h','W7OWbrm','WRdcQCo8W6C','W7mHW7pdOa','W5qYW70','vNLeW6q','WQtdKSkDsa','WPldK8oX','WQhcNIFdQW','WOrhWQZcNq','wbjXWOe','W4ZdKqpdQG','W5eSW5yK','WPRcHtVcSW','W7ruW6m','WRpcSh5+','WOBdLmo8gG','eqy5WPa','WO4BWRBdSa','W4tdGLrq','W7GonJS','qXG/WPy','W4hdGmoHgG','WQtdLI9t','WQnmkSob','xCogW7xdTa','W5JdUSohyxFdUZxcOa','WRpcRgno','zSoZBNa','W5RcUW1S','WPr4W61r','WRyhWQhcNq','WPq5WOeu','wmo2qJm','nSkOxSkl','W7hcJmo/cG','WOn4W7rv','mhu6W7i','WPVcVWPR','WPikW6pcOq','W6ZcL2Cr','WRRcPCk5W7e','xN7dPLS','W5ZdLxDX','WOlcG23dTG','WOxcVmoTwq','WP3cK0VdQa','WP44W4Xn','W6CtWR3dJW','WR9riCka','r8oYxua','evZdGtq','WOxcIIpcOW','WQpcISoxbG','sCoMW4Gd','jdVdH8k6','W63dQmkLEa','nvO8WOm','lIddVmkI','W5xcT0nI','WOVcN1xdQG','k1Lpra','W4RcICoDAc7cKSo2W7q','W7beW57cGa','W6ZcKZnx','W7P8hae','W6GnFxG','WQZdPCo8WQu','expcRYC','D3BdQgm','W6iqmdq','bSoCW4T8','WQmuWQRdLa','W6pcVmoLiW','CxFdUfy','bYldL8kY','W68nCZ4','jSoGbSos','zazWuq','j08vcG','W591WRDD','W6FcGNzv','DsBdOCoZ','r8oYwq','W69FW7C5','W612a1C','W69FW6eK','WOCrWQdcGG','xfmSWRK','lYfKW7G','WRWeWRFcMW','WRxcJ3NdRq','rEkgICkJW7u','W7tcGNNdSW','W6VcGmo4bq','fCkYBSo1','W7f2ceW','kmoNW6Hb','wajXWOG','WRngoW','W5RdPSkDuG','WPFdMKpdVq','wai0WP8','ztuOWQa','WQr+W7La','WQFdMhFdHq','W5f1W5zD','W4lcUGyL','f8oHk8kR','W5zOW7ldQq','WOJcGstcRq','W7HMh0W','W5qkWR3dOW','W5/cQCk5','sZVdVCk9','W73cJSkWwW','x8o8W5je','W6KPW7mQ','sX1IW68','cSoQp8oL','W7xcMmo+bG','W6NcR8o9na','gSk6yJy','WRyeWQa','yCoUW4el','WOVdSaDQ','WQVcKCkwda','WO3cN13dUW','WRmEo8kj','WPjtW7NdVW','WQpdKwpcTW','W5pcQGjO','W7JdIeyv','WOiaW6RcUG','FNmeWPG','W7v2hWS','W7nFW7W+','W7BcPSo3EG','WRZdPCo1WR8','CeGG','W5hcNmo0vq','z8kBxSkk','W4xcSW12','WRmmWR86','fN5Hza','W6FdGYRdSa','qmkHxSof','WRhcRxv0','gSoFpSo+','ieXJWPu','qq3cO30','jWL6W4e','dv41WPG','AhnOW6e','xSo8omo+','W6/dIeqz','W5VdQrDG','W4aHW67dOq','W7rFW5hdGq','WQpdLSoAiq','WPXUWOiy','W73cMNym','W4TNW44n','WQBcIbtdLW','WORcPSoedG','WOSfWRm3','CLBdRd8','WOVcGxFcQq','WOlcKCkjga','y2nP','W7nFW7yJ','uCo/x0m','mCo2W65i','EqT7W7a','lNC8W6O','uSo/xK0','WO/cRCoDdq','WOafWOux','W73dHSo/zW','WR0mWRX6','WOtcT3vP','WRmqC8oo','W7lcPSkMEq','wCoDW7ZcTW','WRLbfbO','lvWowG','zIddKmo9','gg9JW7S','zq0ZWRW','AIqW','WOFcL3NcOG','gSkVlCkX','AHL3Eq','cYddOmoP','WRhdNCoEW6u','qrpdHI8','WQaoWORdKbLIC1SScSkMC2Hb','WRCElmka','r1mGWRC','WQJcNmkUea','nZpdPCoq','WOW6W5aO','WRddMmkjaq','WOFcIsm','xcNcRI4','W6/cJuec','WO3cLcFcOW','WQtdSMnZ','qCo2W78c','jSo/W7vj','WOOQW6nr','vrr/W5e','xMqVWPS','W7r8fqK','W7LVW7ldGq','nJhdJmoK','WPNdSCoTW60','W5pcQHnQ','W6xcIGWD','WRhcSNu6','WPJcKdJcQW','WRBdL8omEq','chtdN8kW','WPBdGSk5wq','eZTmW60','W7OAW7CV','WRlcGZJdTa','WQRcHhzC','WOZcI8kieq','qxpcQcS','WRxcU3r7','kcddRCo0','W4y/W5O0','aSoRq0e','W5tdGmo9FG','wmo/qce','BZVcICo1','WR/dUCoxFq','bSoNumof','yGTmxW','xh3cOsO','W5xcT0nX','WQFcULTW','vSoBWRtdPW','D3BdUci','WPBcLctdTG','W7tcNd7dQq','xbqIWOi','W7RdLrSt','WOxcLYpdPG','WQ/cI8oAfa','xSkVW5im','omofxCkk','FNqYW6a','qSkMeCon','WOFdLCoQtG','W6xcHhry','efCZWQG','b8kPxSoE','i8kZW65l','iquweq','tmo/q8oo','WP7dLCk5tG','qCo+reO','FhldNSk0','W7tdS8kMzq','WQdcVMj/','WQBcUmoFlq','W5RcTW1I','WQpcK3LP','zmoPsIW','W4lcGtBdPG','kmo9W7Gj','WQtdKSk9Aa','qwFcVYC','gmoFW7JdUa','g8o7omo0','WOb9WQ3dSG','WONcIwZcPa','xglcUa','W7NcHCk2rq','WOVdHcpcRG','o2xdOmoY','WRfDnt4','WPFcIL5+','kCoNW7LC','FIbYWRu','W4hcGtBcOa','W43cUfv+','WOalWQtcGa','WQRIGRKaba','WROKWOpcPW','W5JdHsFdUG','W49VW4CE','W7/cH8klrG','WRVdRmo0W7O','WQldM3dcUW','WOu6WQmn','WPtdGSo2tW','qCo+rfm','W7f6aKW','y3hdONa','pSk6dwq','xq0JWR0','WOv+W6na','gmoQW7ZdSG','rrqbWOm','WR3cMSoUuq','eg/dUSk2','WPddHmobsa','v8oXa2q','zNldG8kY','WO7cHSkToW','W69EjZC','wmo7W5il','q0ddJdm','gmoFW6FcTW','WOtcNIxdHW','W4VdIXtcVZNdReZdV8kwv8oI','W73cNSkvgW','s8oKxva','W5hdU8oFwa','ltFdQ8k9','WOqeW7ZcPW','WP9JW4zs','nCohoSoR','WRLijmkS','mSkcfSop','nIldUSo1','WOXsW7JcTG','W6hcMtBcOa','WP8MW5So','W4vJW5VdOq','Bae8qa','WQNcVgldOW','W6ftW7JcJq','BajEuG','sSkeWRFdSq','wdTGWQi','CXC1','WPRcRCoZma','lgiNW70','w8o0tcG','W7VdU8o8W7i','rmoLx0a','W7FdTSkWBG','WP8HWRqe','WOrlWQZcVa','dSk9yde','WRBdPdiK','W6BcPgzF','v8otW7hcTW','FNq1W6e','DgxdQSo0','W4pdIGVcVW','deBdJJu','WQRdI0ez','ENG8W7y','DdFcGSoSWRLLW506W5RcI8kDWP7dNq','lSowsSoo','vmoxW6FdVW','yLTlsW','W612crG','W5j3W5yK','WRihW6S','xCo7WOHU','WOdcRepdUG','W7r4at0','WPZcLJJcOa','WOlcQ8odrq','kdtcPtC','BZbUW7G','WQddLSoAoW','WPiWWRlcUW','WPdcIvBdUG','WORdINFcIa','WPb0W5XE','CXCKWQe','W7NdMvKC','W5TyWQldOq','EdBdOCoX','emkYxCoo','WQ92gSkj','W4hdJ1FdQG','W5NcJK3dQG','W6xdOCkW','WPimWRFcSa','WOT0W7Pr','meb1WOy','W5hdQmkDdG','W7zImHO','WRpcRxL4','WOpcSLz2','WOtdMtBdMW','W6FcJrfE','oGL4WO0','tmksWRtdTG','WQSAitK','W7BcNmkDua','W7BdJJddRG','WRhdRNeH','W6voWQHQ','awLoW6W','WOelW5aK','fNJdHSkN','WPVcI8k5vq','jmo6W7Ph','C3ddLmkW','f1ZdHZG','WR1vW7e+','p8kPWRWx','W7dcGCk9qa','ohrvWQi','xCo0acy','j8ohj8os','omowsSon','qKua','aSoQiSkA','W7iUuWG','WRJcH8kXsG','W6NcK2bc','qSkRwmof','WRBcGKqz','l2ZdGCkO','aKFcItW','dvFdQJu','WRpcQN1/','WRpcLmkowW','WQNdTCk8DW','WPJcHSoZma','W73cJY/dPq','WQFcM8ks','Ev/cJr0','WQuMWQdcNG','qmo1xW','DSoqaSoB','WRKFW6tcIW','W6VdS8kHlq','W7VcICkXAW','W7JcL1aF','c3FdNCk0','W5qJW5f7','WOiiW6ldSW','WO0mW6lcTa','luv+W5S','rSo/tda','WPNdSSkEua','WOuMW48','WRvkB+kdTq','WOqAW6NdSW','C09Vqa','Bmoec8oF','FxaLWOq','W7rBW5JcLG','W4KipXu','W6XNfei','erpdMs8','WP92aSke','WO3cN1BdUW','bf9ZW4m','WRtdGtpcHG','WORcIZNcSG','nYVcRSo5','pv16WO0','W5vKW67cRG','W7/dIKHE','W6RcL38F','zwC2WQq','WONcLKtdTG','W6WtWQtcKa','mwddVmkr','zMBdLmkU','n8ogaW','WPBcMtldRa','f8oHpmoK','WP7cSgq6','W457hKW','EJbQW7i','WO7cIg3cPq','CYC7WQq','WRrrpCkf','cL3dJde','zHTPrG','pgNcRSo+','WRFcUMrF','WRhdLCo+uW','nxNdGSk2','k8kZW71a','F3qNWR4','rCkTCSoi','W5nZW7VdPW','WRxcRt12','W7X+aqa','c0yGWRG','W7rvW4NcIa','w3O3W7a','W4FdQCk7Eq','WOdcJtNcOq','W6DEjYO','xWutWOG','W4bKW7hdOq','WOtcVSoeBq','fSkUxmoo','rx/dHG','WQVcL8kiea','W5qZW74','zMhdPxy','W5VcHmk6sa','WOiiW7/cTG','WRGxW6xcNG','WQ8xW6JcGa','W44/W4zV','mSo1fmoE','B090WO8','WOhcLdpdPW','gejCqW','e08fWPK','WRRcGsNdLW','W6JcK31w','WO3cLJJcOG','W7DdW6xdIa','FMKWWQu','BZyHW7C','WRldKCoFW4S','W5NdKSkKzq','W6NcJhRdTa','WPKiW53cVW','dZubW4m','oHzHW7W','efBcHx0','f8kOW6iP','q1RdMN0','lha9W6a','W5JdUmkDesNcLtlcMZ7cSCo8WQ0','W4VcOCobvG','WQiZgai','W69YW5ah','WOz/W6rd','WRKxWOFcJq','W7rcW5tcLW','DJjZW6W','W4ZdMdpcRW','W5nLWRi','WRBdU8o8W74','mwVdLCkP','D1u/bG','mmolaSow','kYZdTmo4','W4/dKZBdSW','hMLeW6C','WRtdQSoTWR8','WOj1WPau','lc3dQ8oZ','WOZdSSkFdG','j1Ovca','WQddUSo8WR8','WPRdNSk0wa','ebzH','WOhdLCo0vq','WQigW6lcPW','WOlcP8obaa','WPaYWPnD','umopExe','WOnhWPvH','i2/cISox','WOxdPCoBtW','W6RdSSkWyW','W5eSW4CK','oYRdUwC','W77cGCkXta','W4ZdHgVcPa','wmkYqCoB','WOL1W5rC','rmkSE8oW','owxdNSoz','W6ddLNjt','W7xcVq1X','ivHaxG','exFdGmkM','W7bdW5FdRa','W7LtW5dcHa','WOpdNmo8','vCoUrcS','qX49WPq','f37dImkX','tSk0vmoz','bH7dGtG','W73cHSkR','ESoaW401','W4yHW6ZdOq','gmo9W7VdUq','vSoAW73dTa','W6CrisS','W5VcTWzX','WPBdK8oWxa','W7z9hH8','WOj1WPGs','W7OAW7aI','WOGXWRlcUW','W5RcSW1H','WQFdI2dcGG','WPtcKSo9nW','yMhdUxy','xCo0xIe','irpdQmoO','WOBdHmo2aq','WQRcNCkueG','ECkEW6ddVW','rvW3WPa','W4ZcKdlcQW','W7r+hGi','dvpdPmkV','Awm6W6e','nhldII0','yWbUCq','W4VcOCoBaa','W5/cLa7dQq','dZToW7a','bfzhrG','W4KGWQ9r','W6iyoJS','WQTEC3G','WR3dIttdHG','W7CaWQtcMG','iSokdSoj','WOL3W75g','uConW7FdHa','W5mXjtS','WONcKctdPG','tmoNF8oe','WR7dLN1E','sSokW5BdSG','DSohh8ok','W5S3paG','WPlcHcpdSq','zx80','W4urj3G','WOpcNZZcOG','DSkEa8ot','mJxcPtC','puO7WPe','fSkMrCoo','bhDfWQW','W5XZW7Hg','aSkQdqu','W6FcLLqv','W7bsWPpdGq','WRJcRbldPG','W4rGW7ddUW','WRRdQa/dKa','h8oHiSo+','imo2W6HR','WPGTWPmz','EaL+WPK','qx49W6S','WRhcSvtdTW','W67dR8o2W7e','W6NdN0ur','WPDHWPC','W5n1W7xdUa','CJXV','d088fa','W71tW5tcHG','aMddMSkm','WOu0WOqA','xhpcOMe','WP/cUhZdVG','W5hdUmkbfq','WRtcNJ3dJG','kCoNW71A','qJFdMSk0','W5DVW6JdQW','WQKAWOaE','W5f1W5zb','WRxdJNNcOa','W4D+W6Dr','dCoIW4CC','W5BcOSkWEa','n8obdSou','CWLHWRq','W6LsW605','c0fQEW','W5BcHCoXoW','WOpcKIpdRG','dJTsW60','W7dcLwpcIq','sCoMW5a','jmopxCop','WONcKcpcOW','Fd1uW7C','x33cVZ8','DConvty','vcJdVx0','aCkVW4Kg','WOZcLNFdRq','WPBdIJtdRq','FhnKW7S','y8oJyre','W6BdIeye','WRZcUN59','W41rW60I','W6uBpJ0','WOhdN8o/xW','xCosWRJcTW','W6LsW6S/','WQugWQpcNq','W7ObWRFcLq','W6NdRXxdVa','W7rgW43cHa','W7FcMZddRa','FddcICkT','zXKPW5bteCkiWQRdTKddR10','xx3cU2i','W4HAfXK','iCohbSor','WRNdRmkKWR0','vJTBWQ8','qSkJwmoy','kcNdQW','lmkuA8o4','ASoGW7LC','bCk0hZy','nSoUpSo1','WPlcKmkFvq','W4pcGtpdJa','WRqxW6xcLW','bWFdIJS','W63dOCk7ia','W5FcTqy','W6JcICk4ta','W4xdQmo8va','WPZdGCoAta','WQqkWQRcMG','W5pcH8o7oW','AtPNWQ4','WRynWQZcHW','W444W4DH','W4zOW6JdOG','CYtcUdi','W4pdMupcUG','cmoQyG','WO4DWQZcOa','eCo6vr4','ChddLmkW','idBdKa','munpxG','dbhdO8oL','W7DNmXu','fcZdVCoP','WP90W7rb','WQxcLmkBbG','WQBdOmk6yW','WQpdQmo+W6O','W4RcJmo5','DSoIrfy','mSkEWRq','r8oGW48k','WRdcJrua','dSofk8oZ','EbOKW70','ub1XWPC','WRL8fWO','W5NcRCkWFa','v8kzWRJdUG','gSoFWRtdSW','EXWYWQa','W5WEBW','FXW2W5K','WOr/b8kv','y2C4W4K','xGC6WRW','yLqYWQC','WQhdOCo8W7e','xSoxW7hdUW','W73dJdmt','EHXTW7m','x8oQW4Sl','WQ8CCCkJ','nLGotW','W4xdVenl','WRhcLZZdNq','WQJcLCkFgW','FxBcSq','W6dcPSkZyG','AZ9K','W57cICoQ','W7rwW71W','whFcUW4','e35uW60','ldm0W60','WRRdVmoTW68','Ce4J','WPq7W40q','cmoHWQyo','AdxcHmkV','rx0AW7i','DsTZW6u','ex5vW4C','w8oOwIu','WO3cTwJdIW','w8oOdsa','W7xcQCk5WR8','yHeOWQa','W4nBW77dPq','W454frG','WOn0W6rx','ffBdJdy','WOVcSNhdGG','WPdcLfxdUG','W7JdHe4x','Fvr6wW','bCoxamok','e3vvWQi','W4P3W7zz','qCkQsf0','zColqMS','W7v3uqu','lW0Eba','W6dcSCkUWQ7cRc47tCkSu8k+WRejiG','WQ/cNSobeW','W5xcJSkWFG','WOtdJsldMW','tSkEW6FdOW','q1RdNx0','W6lcN39u','umoZfWu','WRihW6xcMW','W53dMSkSCa','WQFdGConW5i','W73dQSkWma','CwJdONi','jw7dKmkU','yGPYqa','WRakWRBcGa','W6BdJI3dQa','W7jpW7zQ','WOBdQqbQ','m8oqsq','W6ldG3i','xCoyW73dUq','WQNcUNfO','WPFcNr/cVW','ErC1W74','W58XhhG','q1xdHJm','afRdJZq','j8oaimo9','dmoNwCok','WO3dUCon','W6VcJCo/wG','WRLDeae','WRVcV2VdJa','k14Uuq','W6yFW7BcIa','WQ3cOXRdGW','vNLoW7a','W4lcLc/dSG','zNhdLmkV','xWi3WP4','vhhcUca','f39eW7a','W6BdTmk8Aa','W4lcGtBdSa','m8omeW','W6OZeX4','WPn5W7jD','WO7dMXZdOW','whhdTYm','WOdcHd7dRG','WPumW7tcPW','W73dLCktFG','WP8WW5yz','n8oYW79h','W5NcVe8L','WQFdRmo6W6S','ACoBrvi','W6rwW6f3','WRBdUSoQW4S','r8oZdu0','WONcGhFcQW','WQpdMmkzgG','vXrrW4e','W5pdSGj2','W7LvWRFcKq','W7DdW6xdLa','fhrtW6y','W5i9W5KO','W7BdI8k7Aq','qCo7W5mw','w8o/yWa','EIfKWRu','WPRcHmoZoW','m0e7WOu','WOn1WPCj','WR0EWPxdJW','vmoBW7NdSG','mCoYW7TB','W57dG8oWqa','rSkQBMm','W5zKW7RdRW','mvfVW48','WQldHsJdNW','gmoUW5ddKq','WOeoW50U','WRJdRmo4W6W','W6ZdJHddRG','WQNcHZJcQa','W61aW73cLG','WPyWWOi4','W5pcMmk8eW','WPNcMSo/BG','WOLLWRPd','W6fwW77cMq','WRvuW5JdGq','WONcP8oDra','uCo5wsS','nHGYWQa','W4T1WPuy','W616bWK','pctdJgC','Eb17W7m','xmoOsce','W7RcGc3cRq','W7tcTqrN','sSoxW7BdSG','nepdNCkX','WQFdQmo3W6W','W6xdMe4u','W5VdIg7cUq','W5hdVenh','W6hcPIddUa','DSoneSoo','xCkEW73dOW','WP7dKCoTfG','W5WEB8ob','WOVcM0hdPG','W5uLW5WY','WQTcms0','W5VcLmk8kG','yGPOCq','bfznW4O','WQvdWRxcHG','lSojc8o9','AYtdRwS','WOmUW5KK','Dr1ZqG','WOpdNmo4qW','W5DZW7/dRW','W5xcJSoOCW','cmoUimoK','WQ9dW43cKq','fmk6dq','xZZdPmkG','dmoQrCoe','WRybW6pdSW','q8oUsau','WPv8WRDd','W58rphG','WPmFW63cSq','W57cPd7dMa','W6xdHmkNsq','WQbFkmku','WO3cGZpdSq','W6JcICk8qa','WRizW6dcPW','t8o/xLe','zf4KWQu','zMhdS3y','W7xdISo2W7e','ua5REq','xfmVWRS','kJhdP8o7','ewdcOYa','e3zeW6W','W6KrmIO','W5yJWRSf','W5hdQfmR','vK9jW6S','dhxdJG','edToW7C','fwpcKSk4','W7tcG2Dc','ff/dJdK','W7RcMYVcRG','W5XsWPxdHG','g8oxaCoT','j1LDtW','WQ8Eomkj','WQ7dJgC','yctdQM4','ESkcd8op','WPKBW5ZcQG','W4SHW7tdRW','vryVWQC','vSokW5NdUa','xmo/dsC','WQRcJ8k/nW','WO0qWQi','fmoPxse','W7pdGhNdKW','n1ZdHZG','W5zKW67cRG','WQZdLxRdHq','WOuWWOuj','leqccG','W7VcIYhdTa','W7XxW6fQ','qCoMW5ab','W6/dJKKd','W65zW6S4','W5JdKthdRG','mmoncCoo','W5BdImkEDW','W7xdVCo2WR8','WQhcISkvaa','W5rUW67dQW','W6OtoJq','DKjVuq','dSkjrSom','WRJdMmoKcq','W4VcI8oatG','WOdcLhFdRq','iCoYW79h','xe8yWRO','aSkDWQldTq','WRKxW6JcGW','W6VdL3mi','W4lcOZldTa','wCoAW7a','lSobc8op','cWNcIwW','mKtdLSk4','zbyLWQy','xCogW7xdUG','m8o/W6uo','iuv3WOq','WRZdGcVdPq','j3XLW7W','4Og3e8o7oa','yq9mgW','rSo/tI0','WQ4pWQddIq','aYddVx7dLCksWOBdSmoGW7ZdRSk9WQC','dX3cIrq','W6DtW5ZcHq','WPhcN1hdPG','WP/dLCkKga','pNBcNmkP','WR3dIt3dNq','WQBdJCo2W5G','WQSkoZ0','WO9eW7JcVa','D2FdNmoM','WOGIW7RdQa','xrq8WPq','ashdRmo4','qqm+WPu','W4BcGh98','kxFdN8k5','W5hcPJtdR8oVzCow','WPJcOmoavW','WOpcR3XU','WONcIwZdPa','r8oCW60u','W60rpsW','WRddVXZdGq','W7VcMNtdPG','W6rfW7/cMq','m8o8W4LE','egiPWRK','W6FcIZJdPa','ehGvWRK','W65EicG','WRioWRBdJG','agpdMmkX','W7KzmtK','amo8W48E','WRhcI8oDrq','f3HvWQi','WOBcOCodwq','u0LOW4m','bL7dMsK','WPRdGSk5sa','W7D0uqO','A2KWWQu','WR/cM3jd','khFdGSkF','euBdHtG','WOpdHdVcQq','qSkMeCop','vGeG','WO/cHctdTG','WOeIW4a1','ywFdUw0','W4NdIWu4','tmkfW7FdUa','nxBdT8k0','rvNdRmkB','zrX6WQm','W5RdVZa6','W5/cJSoOnW','tCoyy0G','W5nFW5zD','WPb4W7na','WOpcLt7dRa','b2NdImk7','WRddUCo4W60','Cr11wq','W4ZIG7b3WRi','WRNdItNdMW','WRNdQmo7W7O','W4fvW6JcUG','bfBdM30','W4DOW67dQW','iSkcc8ov','ng3dNmo9','fNRdHmkW','WR17W6PQ','W4ldKCkOwW','meXPW4W','WQNcISkEbG','WP/dNmk3','WRGvWQddNa','WO8mW6hcTG','WPv1W7zn','WOxcGJ7cPq','bwlcTg8','kstdPMm','DeG7WOy','WRWNWRdcUW','FLnhxa','WQRcNCkxea','tmkGdx0','WPjOW6/cRG','amknCmo8','WQRcPSkbzq','A8kZW7rp','WOj5W61q','WQtdLmkWFa','W59OW7ddTW','WP8HW5GA','A8oxW7BdUW','WOVcTL3dNW','ewlcVIa','W6KFmdm','xmoRjCoI','W7BcGJJdSW','rmoIfIG','W6hdMJnf','W696aHK','r8o5rei','W5ddPGe','WOmWWPay','duFdJc8','vbWHWOu','WOddVmoWsq','WOFcRCobrW','amkHCSop','C1qXWRi','oCowr8oj','eYeqWRe','WQhdVSo2WR8','WQtdNdBdKW','WQlcJmkstW','fXpdHIG','W7pcGsVdRq','W5O6jIK','q8oOWPXu','ybWZW6W','WQrBlmki','D3BcPNe','CZzZW5q','n8oqamot','W7PYaGK','WOxdQmoMaa','f8o4W7vg','W7HtW47cKG','WRyaWQ0','WQCcWQlcKq','WOqiW6JcOa','mtpdQJC','WOdcHtxcOW','WRJcMmkTrG','W4LvW6TQ','cSoRW7b/','WRdcQCoYW7O','E8orW7RdOW','W4RdMSkTBG','W67dIfjq','W612naa','fMtdMau','WO7dQmobtW','tmomW73dUG','W5bUW6NdUG','vHjrW5y','jqT5uG','W6lcS8k0','W7mxW7aL','FZ/dQwm','W69FW6LX','WOnKW7hcTq','ifKHWRu','tSoNW4Sf','rsJdVwe','W7xdQmk5W6S','W6tcNSkvgW','WQJdJJBdLW','W4ZcHCoYkG','W5pdR0fJ','gSkSxYe','WOm8WOyj','DSo2l8o/','W4q1W5qS','WRHBB8kw','ohqbW7a','qw3dQw4','dCk1vCoo','WOhdHwZdOq','a8k3qCoh','uCoBW6ldSG','WPvjW77cTG','c8kKvmoz','iSohbmos','e1/dJa','W5PeWOFdGq','W7HFcWi','W6zgW5hcIa','vqqIW64','tmktW6FdVG','W5q2W70','WQJcGu0F','WRVdVCouW7a','CqbS','qGXIWRO','m8owe8oF','E8owfCoB','FCo1W7bl','mfjnqW','iGLOWPu','W4fUWPOy','CYL4W7C','yhq1W7a','WO1TW4aZ','W5ddG8knwq','fmoBwta','rCoVtcG','w1eZWRm','W7zzW5pcHq','W6ynB1y','itBdO0mth8okW70','W64fi8ki','W4uVWP0u','WPxcK0hcRW','4PEv4PAjWRK','W6xdOSkX','WRirW6JcHW','W7ZcJvme','DWbPwG','W7P6bqa','WQtdTCk8ya','W4D4W7Pz','WQnAkSks','vb0MWPG','WPBcOqPR','WOlcPSoidG','W4/cLrzm','W6VcHh9v','yuhdNSkV','W4ZcUwf0','WOj8W7jA','yhq+W6e','w8oUds4','WPldImo/cq','W7CcWQVcKa','kItdUSo4','W5RcTXaL','WQLsW5tcLW','aYRdJmk0','WOSWW4Xm','AGbWga','xmkcr8kA','WRJcHJZdQq','W5X1W57dTW','W6BcImkBeq','WOqrW63cVG','W5uOW4y1','WQddMMtcUa','W6ZcN3fy','gh5fWQi','WOVcNZa','o1v4W7O','WOzIW7i','mM3dPsi','jmolbCot','WR3cNrbl','WRKqWQpcMW','sSoAWRtdPW','W5vGW4yO','DgD6WOW','WRTxpeW','W7RdN08t','zLLJW5O','WR/cSIOO','W7VcVSkSW60','WPVcNtlcVW','W6FcMx1x','qmoYtda','k3FdNmo9','WQhdOCoRW7O','WPdcLelcRW','W7HcW7a','W5ddJSkqlq','WR7cGthcOW','W7ZcGdZcRq','W4BcRSootq','W6xcKNzd','WOr5W7jx','W7NcJmk6wW','WOFdMr3dVG','W4fjWQW','WQaHWPmj','vvm/W4e','kSkZWQWa','eMRdMmkU','W6/dHfjq','WQtIGPldTxK','WRZcLZdcRG','W7dcVhv0','W57dG8oPwW','DXS8uG','W5pcOfKL','W6ywW4RcIa','WOFdGSo4mq','dmoRkCoJ','nmodbmor','W7pdQCkGyq','lM1xWRi','dSkQwu0','WRvxW4/cHa','rraJWPy','yHCocG','WR3IGk7cPd4','b8oReCoc','A2C1W4i','WQZdGZhdLq','zx4HWQq','rmo7W5u','WQ4BWRBdSW','W4lcMdNdTa','aSoNseG','bKVdIda','W7JcIZFdTa','WR9ylSkc','WPtcTCkEaG','W7jzW7eN','aJuDWQ0','qgm7W5m','tSo/f30','rwqIW5u','WOm8W75A','WPJcGsxdVq','W6PJeb4','WRJcVmkxBa','WR9CW6SK','WPy0WPey','zvRcIw8','W5ZcGwn7','WOrjW6RcPG','WPZdMLldPW','vam0W5e','FJeLW7C','Dw3dPs8','i8o2W64','WPmeWRBcPG','dIbgW6m','ocLNWRa','WQddIZ3dLW','g35pW7y','WRdcQCovW74','Ex83WR4','WPvCW7T8','WPRdKSo8gG','WR4EkCku','o8kzbCoB','qXq8W5e','WO7cPSoBdG','puDRWPq','nuZdKmkW','WPvriCkv','DKZdGK8','zLKRWPa','F3L0WQG','W4VcU8oAtq','xSkiW7u','bxxdKbO','WPRcK8oZmG','W6xcRxv3','WO4CW7JcOW','fCoQW4TF','W6nmkSkm','W7miW7qf','uSoRtKa','qG1JW6i','W77dNGar','b8kVkCoN','W5NcJ8oYlq','b8kQcSkH','WR0AWQrQ','Aq5L','WRJcKCkWxa','WOZcHtldUG','WOVcGItdTW','Amo3W48x','uh7dRcO','qL8IW7i','WRhcQZb5','h0qHWOK','uCoPqLC','pNPtW6y','WONcGdlcTa','WQlcUZbZ','f2/dImk5','rCkTCSoc','DgzPW5S','W4GHW4X7','yhhdP2C','a8kKwmof','y2m3W6e','WRSgWQVcKW','WRrmjSke','W7pcL2fC','x1eLWPq','WPjhW7NdQW','W69tW6jX','zqKTWRO','W6NdJxfq','aSo4seq','j1nksW','WOv7W5q','W5JcHCo0pW','W6rFESkc','W5dcQSooqW','lenSuW','WPv+W7Lt','ye9Uuq','WPRdHmo4vG','W7XiW6mJ','Fw/dUci','nu9Vuq','vSoIseW','n1POWRu','WQxcP8oBaa','W5X3W7Tr','W7jjW7e4','vSoVAeK','WO7cMgJdGW','deTKW4G','WRhcJu0r','ldFdP8oW','nCo2W7ev','uCo/q2O','W4xdN3xdJa','WOhcISk6ca','W7awW4NcIq','W61Hba8','W5eyftO','WOjJWRPh','WRKzy8km','j1znqG','n8obdW','rbyTWRK','WQ3cNNhdRG','cSoUomo0','WQ/cLSkEea','qmo/xJa','DX4K','WOpcLJi','k1jiba','W53cOsVdHq','W485WR8A','WPVcOHhdSq','e0pdJc8','AHP7xa','WONcLM3dTW','Caf5ta','WRaDpdq','aCo6W7jp','W7bGuqe','x8oGW4ir','W5hcTXDa','wby1W7m','vfeLWOm','EJfOW7K','wSoMW5im','WQxcM8o1CW','WR7dSMr1','lfpdSmko','WQtdSNz7','W5/dGmoUoW','ebpdIdm','W7BcGtFdSW','CaCyWOS','W48RW4CU','W7PsW7bW','suCvW5q','WPlcNmkUfa','W6X3fb8','W4hcGSowBIpcRSoHW58','W5zWW6ms','W5fQW7VdVa','whZcQ28','W5NcUSoBgG','WQrBB8ka','FID2W7a','WOnVW4Cn','qtTGW7m','zGKKWQe','W6a8iaa','iSo9W6G','W6NdIMWE','W6/cQSo/WQO','WRpcNmkFbG','ngFdN8k+','EdScWP4','W5NcJmo9lq','W6DwW6vd','CaT5rW','qmoQW5ux','vIDfW6S','WQ/dMCoCW5u','nHDhxG','kY3dOCoV','bhJdNCk8','W4pdOCkurW','zxu2W6O','W4fjW7BdVG','q1ddMZG','D2RdVYW','W5NdK2NdKq','k8o2W7fl','WQGJW5/cVa','nZFdP8oP','WRBcISkvga','W7SsmIe','WRZdPCo9','WP/cGwZcTG','WRBcUrlcOG','tmo3cCoo','iv3cHCo1','W7ZdTmkeAW','W4ehW6pcPW','jq19vW','wvGM','tCokW6ddUa','W4fPW7pdUW','yNG8W7y','l2ZdLG','iSolcmou','W7joW7aL','vghcRZ0','CqD5fa','W7fBW7aL','WRZcUZ1Z','W7ddImk7ta','WQj+eb4','u8o/wqe','s8oUsau','W78racW','WRVcJdJdPG','ivzcbG','m3fDWRu','WPdcHt7dPa','W5FcK8k8kG','WOhdL8o7wW','W6VcNee','zWb9rG','kmo+W7Ka','vSoIsau','WRRdPCo2W60','sCoGxu0','h8oHbSol','WQ/cR8o+kq','WRSwW7pcJG','FMhdPMC','dbKLWRu','zCoAWRXp','W4pdJLxdTW','rSoUBYe','WRJdMKNdRG','WQtdQXZdOq','WPVdGHZcVq','m0ZdOSk+','WRZdSMnU','WRagWRhcSq','WO0iW6xcVq','W48PWPuX','W5z0W7Op','WORdVCoRva','W7bfWP3cKq','WRbrpCkm','DmkVBmkX','WQtcUMHU','WPJcQ8oauG','WORcJLZdOW','xZ8aWPa','W7bfWPhdGq','W6pdJIRdTa','tN5mWRK','WR7cQZ18','WO0gW77dQq','W7ddO8kqyq','agpdNCo7','DXL/W5e','lrqGWQe','g8oxc8ot','rbP0Eq','jmoncSkA','WP/cGspdVa','W6hcHZFdPW','W7NcJ8oYkG','W7tcQSoZdW','bNtdMCk8','WRdcMCkwaa','a3XjWQi','Axi6W7C','W5v0W67dQW','W5hdSGzR','lCoLdCoN','w8oVqYa','dCo4W44f','W4hcHZJcQa','wx9iW7q','W6VdKt9C','FwNcSta','efqKWRO','emkXrSkX','jev6WPG','W4vVW57cPq','yMnMBW','nb0OWQa','WRKcWOlcKW','W57dNJpdQW','WOhdLCo0aq','W4VcV8ogva','CeWG','WPVcVmogtW','WQZdGI4','W7pdMGxcRW','Ed9OW7y','tdTKW6C','C1KnWRi','W4qNWPmq','o11ZWOq','W4NdJau4','WQ5kySkv','lYZdUSo1','cmkVp8oL','bM/dGmk6','WO3cGdpcGW','WRldPYKO','W77cGfme','W6DTW4mO','xbyZWRK','WQddMhRdMW','W7/cPXju','WOr+W7Pr','veOYWOq','yLC2W7W','W7FdO8kNEW','dM8mW7y','WQBdVCoGW7m','wSo8xCoc','W5ZcG8kOzq','kZBdP8oY','b8kRvCoy','W6RdM2DE','WQddNYNdHW','fvRdMIG','W7ldIbKr','W7mmaYe','W61YbqK','WQ8EkSkx','WRNcRhnj','W6/cQSkTW74','WRZdR8oWW7W','W7zWbae','WQRdHZ3dGa','WOmXW7fB','mcdcRSo8','WPFdMKtcRW','WOqgW6lcTG','q8oWFL0','WQxdSCkIW7W','WQddGJ3cKG','hSoCW7bc','DNm9W5u','WOWUW5OV','WPJcIetdOG','W7CtWRFcKq','W4VcPmogsW','WRjsW4nH','W4/cVGy4','fCokW6BdTG','BmoWAG8','W7hdNdVcUW','WRZdP8o6W7m','WR9npmku','WRfsWQq','W6GwpJK','WRamla','W7dcR2j1','nJCGWR4','eulcVIa','WPBcOHfQ','W7BcNmk6sG','rmoQW5ve','WOPKWP5L','WRTdWQpcNq','W5tcHmkM','zHKWWOu','WPhcVhhdMq','WRlcMCkoea','WReVW4VcVW','mumoxG','W5tcG8oWkW','s8oBWRtdTq','fh5jW6m','WRGaWOCT','W752hW8','W4i2hJ0','WOtcRCoCaa','cNNdMSkW','W6NdRqJdPG','vh84WQ8','W5pcHSkNoa','C3JcPWa','ncddQSo6','yKngtW','B0P0WO0','W6BcKSkpbG','WOpcIdJcTa','Fan5cq','WOfWW7PD','W7BcHt7dSG','W4pdMfeH','g3P2uG','WRNdVCoQ','gCoPqKK','WOHJW7iu','zx3cO28','W48OWPuO','W7LsW7FcKq','FtXVW6e','W68TE0W','zNBdMCk4','WO4eW7ZcPW','kgFcNmk1','W5mOW5GU','yqzQ','W6uzAwG','WOiHWO8r','g8oHi8oK','W6HpyW','WRZcU2m6','W6CBpt8','W7GBF3G','WOeRW5OZ','bJfZWQq','W5pcHmk8Fq','vSorW6dcTW','f3Hj','WPBdGSk5xa','nKnbrW','jxjdW64','W6WBpt0','W4ldKMZcTG','sSoQW5iH','WPxcJW/cVa','W7hcJmk6cq','xCo2dt0','W7ZdMmoibW','W7hcNmk2rG','dxldMSo1','kqddNCo8','bL7dJdm','lLjatq','W63cMwfy','aJTaW6S','W6NdMxGc','fCoSimot','tmo9W4en','WONdLCkJcW','W7pcJ27dKW','gSoyW7VdUq','Ax0/W60','W7maWQqS','lIVdR2S','W6XLW5JcJq','zmo3WQHn','ncNcRSoT','mSoXW75p','rLCMWQK','WRrrk8ky','WRyeWRFcLq','yNvlra','WR3dLxBcKG','WOVcJdNcIq','vK9PW4C','Aaz/WOG','DtqHW6e','DmogdSoj','WO7cVmoosq','nHWSWRi','WPRcTmo0oW','W6iqna','lNVcHmk9','aLD6WRe','eN7dImk+','W7jtW4NcPa','W6XHgai','W5eMWOie','WOqgW6FcTa','j2ZdGSkT'];a0c=function(){return bj;};return a0c();}</script>
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// PAS DEMO GATE — Email + Device Fingerprint One-Use System
+// REPLACE_WORKER_URL below with your deployed Cloudflare Worker URL
+// ═══════════════════════════════════════════════════════════════════════════
+const PAS_WORKER_URL = 'https://pas-gate.aidensystemslab.workers.dev';
+
+// ── Device Fingerprint ──────────────────────────────────────────────────
+function buildFingerprint() {
+  const parts = [
+    navigator.userAgent || '',
+    navigator.language || '',
+    screen.width + 'x' + screen.height,
+    screen.colorDepth || '',
+    new Date().getTimezoneOffset(),
+    navigator.hardwareConcurrency || '',
+    navigator.maxTouchPoints || 0,
+    (navigator.platform || ''),
+  ];
+  const raw = parts.join('|');
+  // Simple hash (djb2)
+  let hash = 5381;
+  for (let i = 0; i < raw.length; i++) {
+    hash = ((hash << 5) + hash) ^ raw.charCodeAt(i);
+    hash = hash & hash; // 32-bit
+  }
+  return Math.abs(hash).toString(36) + raw.length.toString(36);
+}
+
+// ── Gate Submit ──────────────────────────────────────────────────────────
+async function pasGateSubmit() {
+  const emailInput = document.getElementById('gate-email-input');
+  const btn = document.getElementById('gate-submit-btn');
+  const errorEl = document.getElementById('gate-error');
+
+  const email = emailInput.value.trim();
+  errorEl.textContent = '';
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errorEl.textContent = 'Please enter a valid email address.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Checking...';
+
+  // ── Formspree email capture (fires on every valid submission) ──
+  fetch('https://formspree.io/f/mlgooovj', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify({ email: email, source: 'PAS Demo Gate' })
+  }).catch(function() {}); // silent fail — never blocks the demo flow
+
+  try {
+    const fp = buildFingerprint();
+    const res = await fetch(PAS_WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, fingerprint: fp })
+    });
+
+    const data = await res.json();
+
+    if (data.allowed) {
+      // Grant access — remove the gate overlay
+      const overlay = document.getElementById('pas-gate-overlay');
+      if (overlay) overlay.remove();
+      // Show the Gumroad CTA in the output screen
+      document.getElementById('pas-gumroad-cta').style.display = 'block';
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'Unlock Demo →';
+      if (data.reason === 'used_email') {
+        errorEl.textContent = 'This email has already been used for a demo. Purchase the full system to use it permanently.';
+      } else if (data.reason === 'used_device') {
+        errorEl.textContent = 'A demo has already been run from this device. Purchase the full system for unlimited access.';
+      } else {
+        errorEl.textContent = data.reason || 'Access denied. Please try a different email.';
+      }
+    }
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = 'Unlock Demo →';
+    errorEl.textContent = 'Connection error. Please check your internet connection and try again.';
+  }
+}
+
+// Allow Enter key on email input
+document.getElementById('gate-email-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') pasGateSubmit();
+});
+</script>
+</body>
+</html>
